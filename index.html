@@ -651,8 +651,8 @@
   // a bigger square has a bigger divisor, so the same fractional cursor
   // position always yields the same angle, on a laptop or a phone.
   function pixelOffsetToUnit(offsetPx, squarePx){
-    const halfSquare = squarePx / 2;
-    return offsetPx / halfSquare / 2;
+    const halfSquare = squarePx ;
+    return offsetPx / halfSquare;
   }
 
   function initRoboCube(canvas, opts = {}){
