@@ -21,6 +21,17 @@
     --line: rgba(245,243,238,0.12);
     --ease: cubic-bezier(.22,1,.36,1);
   }
+  :root.light-mode{
+    --black:#FFFFFF;
+    --panel:#F5F3EE;
+    --graphite:#E8E6E0;
+    --off:#0A0B0D;
+    --off-dim:#666666;
+    --red:#E8482C;
+    --red-dim:#ff6b4a;
+    --sage:#5a7a5a;
+    --line: rgba(10,11,13,0.12);
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
@@ -29,6 +40,7 @@
     font-family:'Inter',sans-serif;
     overflow-x:hidden;
     cursor:default;
+    transition:background .4s var(--ease), color .4s var(--ease);
   }
   ::selection{background:var(--red);color:var(--off);}
 
@@ -81,7 +93,14 @@
   }
   .logo span{color:var(--red);}
   .logo small{font-family:'Inter';font-weight:500;font-size:11px;color:var(--off-dim);letter-spacing:0.05em;}
-  nav ul{display:flex;gap:36px;list-style:none;}
+  .theme-toggle{
+    background:none;border:none;font-size:20px;cursor:pointer;
+    padding:4px 8px;transition:transform .2s var(--ease);
+    display:flex;align-items:center;gap:6px;margin-left:12px;
+  }
+  .theme-toggle:hover{transform:scale(1.1);}
+  .theme-toggle-label{font-size:11px;color:var(--off-dim);display:none;}
+  @media (max-width:768px){.theme-toggle-label{display:inline;}}
   nav a{
     font-size:13px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;
     position:relative;padding-bottom:4px;
@@ -373,7 +392,7 @@
 </div>
 
 <header id="siteHeader">
-  <div class="logo">PEPPERS<span>.19044</span></div>
+  <div class="logo">PEPPERS<span>.19044 v4 <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></span></div>
   <nav>
     <ul>
       <li><a href="#about">Team</a></li>
@@ -652,7 +671,7 @@
   // position always yields the same angle, on a laptop or a phone.
   function pixelOffsetToUnit(offsetPx, squarePx){
     const halfSquare = squarePx ;
-    return offsetPx / halfSquare;
+    return offsetPx / halfSquare / 2 * 3;
   }
 
   function initRoboCube(canvas, opts = {}){
@@ -796,7 +815,32 @@
   document.querySelector('.burger').addEventListener('click', () => {
     alert('Mobile menu — wire this up to a real drawer when we move past the prototype.');
   });
-</script>
+
+  // ---------- Dark/Light mode toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  const htmlElement = document.documentElement;
+  
+  // Check saved preference or system preference
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  
+  // Apply saved or default theme
+  if(currentTheme === 'light-mode') {
+    htmlElement.classList.add('light-mode');
+    themeToggle.textContent = '🌶️';
+  } else {
+    htmlElement.classList.remove('light-mode');
+    themeToggle.textContent = '🌶️';
+  }
+  
+  // Toggle theme on click
+  themeToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    htmlElement.classList.toggle('light-mode');
+    const isLightMode = htmlElement.classList.contains('light-mode');
+    localStorage.setItem('theme', isLightMode ? 'light-mode' : 'dark-mode');
+  });</script>
 
 </body>
 </html>
