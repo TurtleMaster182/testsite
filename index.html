@@ -130,11 +130,7 @@
   }
   .intro-video-frame video{
     position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-  }
-  .intro-video-frame::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(10,11,13,0) 60%, var(--black) 100%);
-    pointer-events:none;
+    will-change:opacity;
   }
 
   /* ---------- HERO ---------- */
@@ -412,7 +408,7 @@
 </div>
 
 <header id="siteHeader">
-  <div class="logo">PEPPERS<span>#19044 v6</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
+  <div class="logo">PEPPERS<span>#19044 v7</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
   <nav>
     <ul>
       <li><a href="#about">Team</a></li>
@@ -679,6 +675,7 @@
   // ---------- Intro video: fade out as it scrolls back up out of view ----------
   const introVideoFrame = document.getElementById('introVideoFrame');
   if (introVideoFrame) {
+    let rafId;
     const updateIntroFade = () => {
       const rect = introVideoFrame.getBoundingClientRect();
       // Fully visible (top at or below 0) -> opacity 1
@@ -688,8 +685,12 @@
       const opacity = Math.max(0, 1 - (scrolledPast / fadeDistance));
       introVideoFrame.style.opacity = opacity;
     };
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateIntroFade);
+    };
     updateIntroFade();
-    window.addEventListener('scroll', updateIntroFade, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', updateIntroFade);
   }
 
