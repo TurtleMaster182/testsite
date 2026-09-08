@@ -340,7 +340,71 @@
   @keyframes scroll-left{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   .marquee span{font-family:'Archivo';font-weight:800;font-size:26px;color:var(--off-dim);white-space:nowrap;letter-spacing:0.01em;}
   .marquee span:hover{color:var(--red);}
+/* ---------- EVENTS ---------- */
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+  }
+  .event-item {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    gap: 40px;
+    align-items: center;
+    padding: 34px 0;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.4s var(--ease), padding 0.4s var(--ease);
+  }
+  .event-item:hover {
+    background: var(--panel);
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .event-date {
+    font-family: 'Archivo';
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--red);
+    line-height: 1;
+  }
+  .event-date span {
+    display: block;
+    font-family: 'Inter';
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--off-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+  }
+  .event-details h3 {
+    font-size: 24px;
+    color: var(--off);
+    margin-bottom: 8px;
+  }
+  .event-details p {
+    font-size: 14.5px;
+    color: var(--off-dim);
+    line-height: 1.5;
+  }
+  .event-action .btn {
+    padding: 12px 24px;
+    font-size: 12px;
+  }
 
+  @media (max-width: 768px) {
+    .event-item {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 24px 0;
+      align-items: start;
+    }
+    .event-item:hover {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  }
   /* ---------- GALLERY / MEDIA ---------- */
   .gallery-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:180px;gap:14px;}
   .gallery-item{position:relative;overflow:hidden;background:var(--graphite);}
@@ -406,12 +470,13 @@
 </div>
 
 <header id="siteHeader">
-  <div class="logo">PEPPERS<span>#19044 v7</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
+  <div class="logo">PEPPERS<span>#19044 v8</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
   <nav>
     <ul>
       <li><a href="#about">Team</a></li>
       <li><a href="#seasons">Seasons</a></li>
       <li><a href="#sponsors">Sponsors</a></li>
+      <li><a href="#events">Events</a></li> <!-- NEW LINK -->
       <li><a href="#gallery">Gallery</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
@@ -583,7 +648,53 @@
     </div>
   </div>
 </section>
-
+<!-- EVENTS -->
+<section id="events">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <span class="label">Schedule</span>
+        <h2>Upcoming Events.</h2>
+      </div>
+      <p>Catch us on the field, at community outreaches, or drop by our open shop days to see the build in progress.</p>
+    </div>
+    
+    <div class="events-list reveal">
+      <div class="event-item">
+        <div class="event-date">NOV 14<span>2026</span></div>
+        <div class="event-details">
+          <h3>Regional Scrimmage #1</h3>
+          <p>Iași High School of Computer Science · 09:00 AM - 05:00 PM</p>
+        </div>
+        <div class="event-action">
+          <a href="#" class="btn ghost"><span>Details</span></a>
+        </div>
+      </div>
+      
+      <div class="event-item">
+        <div class="event-date">DEC 05<span>2026</span></div>
+        <div class="event-details">
+          <h3>Community Open Shop</h3>
+          <p>Peppers Robotics HQ · 10:00 AM - 02:00 PM</p>
+        </div>
+        <div class="event-action">
+          <a href="#" class="btn ghost"><span>RSVP</span></a>
+        </div>
+      </div>
+      
+      <div class="event-item">
+        <div class="event-date">JAN 22<span>2027</span></div>
+        <div class="event-details">
+          <h3>National Qualifier Tournament</h3>
+          <p>Bucharest Polyvalenta Hall · All Day Event</p>
+        </div>
+        <div class="event-action">
+          <a href="#" class="btn solid"><span>Live Stream</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- GALLERY -->
 <section id="gallery">
   <div class="wrap">
@@ -623,6 +734,7 @@
       <h4>Site</h4>
       <a href="#about">Team</a>
       <a href="#seasons">Seasons</a>
+      <a href="#events">Events</a> <!-- NEW LINK -->
       <a href="#gallery">Gallery</a>
     </div>
     <div class="footer-col">
