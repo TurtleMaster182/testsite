@@ -120,18 +120,16 @@
 
   /* ---------- INTRO VIDEO ---------- */
   .intro-video{
-    position:relative;width:100%;background:var(--black);
-    display:flex;align-items:center;justify-content:center;
+    position:fixed;inset:0;z-index:-1;width:100vw;height:100vh;background:#000;
   }
   .intro-video-frame{
-    position:relative;width:100%;max-width:1400px;margin:0 auto;
-    aspect-ratio:16/9;overflow:hidden;
-    background:#000;
+    position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000;
   }
   .intro-video-frame video{
     position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
     will-change:opacity;
   }
+  .intro-video-spacer{height:100svh;width:100%;}
 
   /* ---------- HERO ---------- */
   .hero{
@@ -423,13 +421,14 @@
 </header>
 
 <!-- INTRO VIDEO -->
-<section class="intro-video" id="introVideo">
+<div class="intro-video" id="introVideo">
   <div class="intro-video-frame" id="introVideoFrame">
     <video id="introVideoEl" autoplay muted loop playsinline>
       <source src="intro-video.mp4" type="video/mp4">
     </video>
   </div>
-</section>
+</div>
+<div class="intro-video-spacer"></div>
 
 <!-- HERO -->
 <section class="hero">
@@ -672,18 +671,21 @@
     el.addEventListener('mouseleave', () => cursorDot.classList.remove('big'));
   });
 
-  // ---------- Intro video: fade out as it scrolls back up out of view ----------
+  // ---------- Intro video: fixed background, fades then pauses as you scroll ----------
   const introVideoFrame = document.getElementById('introVideoFrame');
-  if (introVideoFrame) {
+  const introVideoEl = document.getElementById('introVideoEl');
+  if (introVideoFrame && introVideoEl) {
     let rafId;
+    let wasZero = false;
     const updateIntroFade = () => {
-      const rect = introVideoFrame.getBoundingClientRect();
-      // Fully visible (top at or below 0) -> opacity 1
-      // As the top scrolls above the viewport, fade toward 0 over one frame-height of scroll
-      const fadeDistance = Math.max(rect.height, 1);
-      const scrolledPast = Math.max(0, -rect.top);
-      const opacity = Math.max(0, 1 - (scrolledPast / fadeDistance));
+      const fadeDistance = Math.max(window.innerHeight, 1);
+      const opacity = Math.max(0, 1 - (window.scrollY / fadeDistance));
       introVideoFrame.style.opacity = opacity;
+      if (opacity <= 0) {
+        if (!wasZero) { introVideoEl.pause(); wasZero = true; }
+      } else if (wasZero) {
+        introVideoEl.play(); wasZero = false;
+      }
     };
     const onScroll = () => {
       cancelAnimationFrame(rafId);
