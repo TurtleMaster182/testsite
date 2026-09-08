@@ -118,6 +118,25 @@
   .nav-cta:hover{background:var(--red);border-color:var(--red);}
   .burger{display:none;}
 
+  /* ---------- INTRO VIDEO ---------- */
+  .intro-video{
+    position:relative;width:100%;background:var(--black);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .intro-video-frame{
+    position:relative;width:100%;max-width:1400px;margin:0 auto;
+    aspect-ratio:16/9;overflow:hidden;
+    background:#000;
+  }
+  .intro-video-frame video{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .intro-video-frame::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(10,11,13,0) 60%, var(--black) 100%);
+    pointer-events:none;
+  }
+
   /* ---------- HERO ---------- */
   .hero{
     position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;
@@ -393,7 +412,7 @@
 </div>
 
 <header id="siteHeader">
-  <div class="logo">PEPPERS<span>#19044 v5</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
+  <div class="logo">PEPPERS<span>#19044 v6</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
   <nav>
     <ul>
       <li><a href="#about">Team</a></li>
@@ -406,6 +425,15 @@
   <a href="#contact" class="nav-cta">Sponsor Us</a>
   <div class="burger"><span></span><span></span><span></span></div>
 </header>
+
+<!-- INTRO VIDEO -->
+<section class="intro-video" id="introVideo">
+  <div class="intro-video-frame" id="introVideoFrame">
+    <video id="introVideoEl" autoplay muted loop playsinline>
+      <source src="intro-video.mp4" type="video/mp4">
+    </video>
+  </div>
+</section>
 
 <!-- HERO -->
 <section class="hero">
@@ -647,6 +675,23 @@
     el.addEventListener('mouseenter', () => cursorDot.classList.add('big'));
     el.addEventListener('mouseleave', () => cursorDot.classList.remove('big'));
   });
+
+  // ---------- Intro video: fade out as it scrolls back up out of view ----------
+  const introVideoFrame = document.getElementById('introVideoFrame');
+  if (introVideoFrame) {
+    const updateIntroFade = () => {
+      const rect = introVideoFrame.getBoundingClientRect();
+      // Fully visible (top at or below 0) -> opacity 1
+      // As the top scrolls above the viewport, fade toward 0 over one frame-height of scroll
+      const fadeDistance = Math.max(rect.height, 1);
+      const scrolledPast = Math.max(0, -rect.top);
+      const opacity = Math.max(0, 1 - (scrolledPast / fadeDistance));
+      introVideoFrame.style.opacity = opacity;
+    };
+    updateIntroFade();
+    window.addEventListener('scroll', updateIntroFade, { passive: true });
+    window.addEventListener('resize', updateIntroFade);
+  }
 
   // ---------- Header scroll state ----------
   const header = document.getElementById('siteHeader');
