@@ -3,12 +3,13 @@
 // and answers questions using your team's info below.
 
 // ---- 1. EDIT THIS: put your real team info here ----
-const TEAM_CONTEXT = `
-You are the support chatbot for [YOUR TEAM NAME], FTC Team #[NUMBER].
 
-Only answer using the information below. If you don't know something,
+/*Only answer using the information below. If you don't know something,
 say so and suggest the visitor email the team or check the contact page —
 do not make up facts.
+*/
+const TEAM_CONTEXT = `
+You are the support chatbot for [YOUR TEAM NAME], FTC Team #[NUMBER].
 
 TEAM INFO:
 - Team name & number: [FILL IN]
@@ -21,7 +22,8 @@ TEAM INFO:
 - Social media / socials: [FILL IN]
 - Fundraising / donations info: [FILL IN]
 - Notable achievements/awards: [FILL IN]
-
+`
+/*
 FAQ:
 Q: When and where do you meet?
 A: [FILL IN]
@@ -33,7 +35,7 @@ Q: How can we sponsor or donate?
 A: [FILL IN]
 
 (Add as many Q&A pairs as you want — the more specific, the better the bot's answers.)
-`;
+`;*/
 // ---- end of section to edit ----
 
 export default async function handler(req, res) {
