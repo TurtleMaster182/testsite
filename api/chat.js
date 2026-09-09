@@ -37,6 +37,18 @@ A: [FILL IN]
 (Add as many Q&A pairs as you want — the more specific, the better the bot's answers.)
 `;*/
 // ---- end of section to edit ----
+// Primary model and fallback models in order of priority
+const MODELS = [
+  'gemini-3.8-flash',
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite'
+];
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -58,39 +70,47 @@ export default async function handler(req, res) {
     }));
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    
-    // Switch to streamGenerateContent with Server-Sent Events (SSE) enabled
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
+    let response = null;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: TEAM_CONTEXT }] },
-        contents: contents,
-        generationConfig: { maxOutputTokens: 500 },
-      }),
-    });
+    // Loop through fallback models if primary model returns 503 or errors
+    for (const model of MODELS) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Gemini API error:', errText);
-      return res.status(502).json({ error: 'Upstream API error' });
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: TEAM_CONTEXT }] },
+          contents: contents,
+          generationConfig: { maxOutputTokens: 500 },
+        }),
+      });
+
+      if (response.ok) {
+        break; // Successfully connected to an available model
+      }
+
+      console.warn(`Model ${model} failed with status ${response.status}. Trying next fallback...`);
     }
 
-    // Set SSE headers for live HTTP chunk streaming
+    if (!response || !response.ok) {
+      const errText = await response?.text();
+      console.error('All Gemini API models failed:', errText);
+      return res.status(503).json({ error: 'Service temporarily unavailable. Please try again in a moment.' });
+    }
+
+    // Set SSE stream headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
 
-    // Read streams from Gemini and flush chunks directly to client
     const reader = response.body.getReader();
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       res.write(value);
     }
-    
+
     return res.end();
   } catch (err) {
     console.error('Chat handler error:', err);
