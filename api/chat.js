@@ -9,10 +9,12 @@ say so and suggest the visitor email the team or check the contact page —
 do not make up facts.
 */
 const TEAM_CONTEXT = `
-You are the support chatbot for [YOUR TEAM NAME], FTC Team #[NUMBER].
+You are the support chatbot for Peppers Robotics, FTC Team #19044.
 
+`
+/*
 TEAM INFO:
-- Team name & number: [FILL IN]
+- Team name & number: Peppers #19044
 - Meeting days/times: [FILL IN]
 - Meeting location: [FILL IN]
 - Contact email: [FILL IN]
@@ -22,8 +24,6 @@ TEAM INFO:
 - Social media / socials: [FILL IN]
 - Fundraising / donations info: [FILL IN]
 - Notable achievements/awards: [FILL IN]
-`
-/*
 FAQ:
 Q: When and where do you meet?
 A: [FILL IN]
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
     }));
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContentStream?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
       method: 'POST',
