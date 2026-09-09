@@ -1,5 +1,5 @@
 // api/chat.js
-// Serverless function (runs on Vercel). Keeps your Anthropic API key secret
+// Serverless function (runs on Vercel). Keeps your Google API key secret
 // and answers questions using your team's info below.
 
 // ---- 1. EDIT THIS: put your real team info here ----
@@ -60,29 +60,41 @@ export default async function handler(req, res) {
     // Keep conversation history short to control cost
     const trimmedMessages = messages.slice(-10);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Map chat history into Google Gemini's contents format (roles must be 'user' or 'model')
+    const contents = trimmedMessages.map((msg) => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    }));
+
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 500,
-        system: TEAM_CONTEXT,
-        messages: trimmedMessages,
+        systemInstruction: {
+          parts: [{ text: TEAM_CONTEXT }],
+        },
+        contents: contents,
+        generationConfig: {
+          maxOutputTokens: 500,
+        },
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('Anthropic API error:', errText);
+      console.error('Gemini API error:', errText);
       return res.status(502).json({ error: 'Upstream API error' });
     }
 
     const data = await response.json();
-    const reply = data.content?.[0]?.text || "Sorry, I couldn't generate a response.";
+    const reply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't generate a response.";
 
     return res.status(200).json({ reply });
   } catch (err) {
