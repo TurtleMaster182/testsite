@@ -72,11 +72,14 @@
 
     inputEl.value = "";
     sendBtn.disabled = true;
+
+    // Add user message to UI and history
     addMessage("user", text);
     state.messages.push({ role: "user", content: text });
 
-    const typingEl = addMessage("bot", "Typing...");
-    typingEl.classList.add("typing");
+    // Create empty bot message container with typing state
+    const botMsgEl = addMessage("bot", "");
+    botMsgEl.classList.add("typing");
 
     try {
       const res = await fetch(API_URL, {
@@ -87,13 +90,52 @@
 
       if (!res.ok) throw new Error("Request failed");
 
-      const data = await res.json();
-      typingEl.remove();
-      addMessage("bot", data.reply);
-      state.messages.push({ role: "assistant", content: data.reply });
+      botMsgEl.classList.remove("typing");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullReply = "";
+      let buffer = "";
+
+      // Stream processing loop
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // Decode incoming raw chunk into string buffer
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        
+        // Preserve incomplete tail ends across stream chunks
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ")) {
+            const rawJson = trimmed.slice(6);
+            try {
+              const parsed = JSON.parse(rawJson);
+              const textChunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "";
+              
+              fullReply += textChunk;
+              botMsgEl.textContent = fullReply;
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            } catch (e) {
+              // Ignore partial line parses
+            }
+          }
+        }
+      }
+
+      // Commit finalized message to chat history state
+      if (fullReply) {
+        state.messages.push({ role: "assistant", content: fullReply });
+      } else {
+        botMsgEl.textContent = "Sorry, no response generated.";
+      }
     } catch (err) {
-      typingEl.remove();
-      addMessage("bot", "Sorry, something went wrong. Please try again later.");
+      botMsgEl.classList.remove("typing");
+      botMsgEl.textContent = "Sorry, something went wrong. Please try again later.";
       console.error(err);
     } finally {
       sendBtn.disabled = false;
