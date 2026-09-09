@@ -39,8 +39,6 @@ A: [FILL IN]
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
 const MODELS = [
-  'gemini-3.8-flash',
-  'gemini-3.7-flash',
   'gemini-3.6-flash',
   'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
@@ -48,19 +46,30 @@ const MODELS = [
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite'
 ];
+export const config = {
+  runtime: 'edge',
+};
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+export default async function handler(req) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
+  }
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+  }
 
   try {
-    const { messages } = req.body;
+    const { messages } = await req.json();
     if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'messages array is required' });
+      return new Response(JSON.stringify({ error: 'messages array is required' }), { status: 400 });
     }
 
     const trimmedMessages = messages.slice(-10);
@@ -70,13 +79,11 @@ export default async function handler(req, res) {
     }));
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    let response = null;
+    let geminiRes = null;
 
-    // Loop through fallback models if primary model returns 503 or errors
     for (const model of MODELS) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
-
-      response = await fetch(url, {
+      geminiRes = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -86,34 +93,24 @@ export default async function handler(req, res) {
         }),
       });
 
-      if (response.ok) {
-        break; // Successfully connected to an available model
-      }
-
-      console.warn(`Model ${model} failed with status ${response.status}. Trying next fallback...`);
+      if (geminiRes.ok) break;
     }
 
-    if (!response || !response.ok) {
-      const errText = await response?.text();
-      console.error('All Gemini API models failed:', errText);
-      return res.status(503).json({ error: 'Service temporarily unavailable. Please try again in a moment.' });
+    if (!geminiRes || !geminiRes.ok) {
+      return new Response(JSON.stringify({ error: 'Service temporarily unavailable.' }), { status: 503 });
     }
 
-    // Set SSE stream headers
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-
-    const reader = response.body.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(value);
-    }
-
-    return res.end();
+    // Directly pipe the stream to the client with SSE headers
+    return new Response(geminiRes.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   } catch (err) {
-    console.error('Chat handler error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
   }
 }
