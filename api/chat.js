@@ -37,53 +37,38 @@ A: [FILL IN]
 (Add as many Q&A pairs as you want — the more specific, the better the bot's answers.)
 `;*/
 // ---- end of section to edit ----
-
 export default async function handler(req, res) {
-  // Basic CORS so your static site can call this function
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const { messages } = req.body;
-
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'messages array is required' });
     }
 
-    // Keep conversation history short to control cost
     const trimmedMessages = messages.slice(-10);
-
-    // Map chat history into Google Gemini's contents format (roles must be 'user' or 'model')
     const contents = trimmedMessages.map((msg) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContentStream?key=${GEMINI_API_KEY}`;
+    
+    // Switch to streamGenerateContent with Server-Sent Events (SSE) enabled
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: TEAM_CONTEXT }],
-        },
+        systemInstruction: { parts: [{ text: TEAM_CONTEXT }] },
         contents: contents,
-        generationConfig: {
-          maxOutputTokens: 500,
-        },
+        generationConfig: { maxOutputTokens: 500 },
       }),
     });
 
@@ -93,12 +78,20 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Upstream API error' });
     }
 
-    const data = await response.json();
-    const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't generate a response.";
+    // Set SSE headers for live HTTP chunk streaming
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
 
-    return res.status(200).json({ reply });
+    // Read streams from Gemini and flush chunks directly to client
+    const reader = response.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+    
+    return res.end();
   } catch (err) {
     console.error('Chat handler error:', err);
     return res.status(500).json({ error: 'Server error' });
