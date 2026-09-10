@@ -39,12 +39,10 @@ A: [FILL IN]
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
 const MODELS = [
-  'gemini-3.6-flash',
-  'gemini-3.5-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite'
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  'gemini-1.5-pro'
 ];
 export const config = {
   runtime: 'edge',
@@ -79,6 +77,14 @@ export default async function handler(req) {
     }));
 
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not configured');
+      return new Response(JSON.stringify({ error: 'GEMINI_API_KEY environment variable is not set.' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
     let geminiRes = null;
 
     for (const model of MODELS) {
