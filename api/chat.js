@@ -4,15 +4,13 @@
 
 // ---- 1. EDIT THIS: put your real team info here ----
 
-/*Only answer using the information below. If you don't know something,
+const TEAM_CONTEXT = `
+Only answer using the information below. If you don't know something,
 say so and suggest the visitor email the team or check the contact page —
 do not make up facts.
-*/
-const TEAM_CONTEXT = `
+
 You are the support chatbot for Peppers Robotics, FTC Team #19044.
 
-`
-/*
 TEAM INFO:
 - Team name & number: Peppers #19044
 - Meeting days/times: [FILL IN]
@@ -24,6 +22,7 @@ TEAM INFO:
 - Social media / socials: [FILL IN]
 - Fundraising / donations info: [FILL IN]
 - Notable achievements/awards: [FILL IN]
+
 FAQ:
 Q: When and where do you meet?
 A: [FILL IN]
@@ -35,18 +34,17 @@ Q: How can we sponsor or donate?
 A: [FILL IN]
 
 (Add as many Q&A pairs as you want — the more specific, the better the bot's answers.)
-`;*/
+`;
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
 const MODELS = [
   'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
+  'gemini-3.1-flash-lite'
 ];
-
 export const config = {
   runtime: 'edge',
 };
- 
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -58,23 +56,23 @@ export default async function handler(req) {
       },
     });
   }
- 
+
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
   }
- 
+
   try {
     const { messages } = await req.json();
     if (!messages || !Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: 'messages array is required' }), { status: 400 });
     }
- 
+
     const trimmedMessages = messages.slice(-10);
     const contents = trimmedMessages.map((msg) => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
- 
+
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY is not configured');
@@ -83,19 +81,19 @@ export default async function handler(req) {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
       });
     }
- 
+
     // Per-attempt timeout so one hung/slow model can't eat the whole
     // function's execution budget and cause an upstream 504.
     const PER_MODEL_TIMEOUT_MS = 8000;
- 
+
     let geminiRes = null;
     let lastErrorDetail = '';
- 
+
     for (const model of MODELS) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
- 
+
       try {
         geminiRes = await fetch(url, {
           method: 'POST',
@@ -107,12 +105,12 @@ export default async function handler(req) {
           }),
           signal: controller.signal,
         });
- 
+
         if (geminiRes.ok) {
           clearTimeout(timeoutId);
           break;
         }
- 
+
         // Read the error body so we can tell auth errors (400/401/403 —
         // retrying with another model won't help) from transient/rate-limit
         // errors (429/5xx — worth trying the next model).
@@ -121,7 +119,7 @@ export default async function handler(req) {
         try { bodyText = await geminiRes.text(); } catch (_) {}
         lastErrorDetail = `[${model}] HTTP ${status}: ${bodyText.slice(0, 300)}`;
         console.error('Gemini request failed:', lastErrorDetail);
- 
+
         if (status === 400 || status === 401 || status === 403) {
           // Bad API key, bad request shape, or permission issue.
           // No point burning time retrying every model.
@@ -137,7 +135,7 @@ export default async function handler(req) {
         clearTimeout(timeoutId);
       }
     }
- 
+
     if (!geminiRes || !geminiRes.ok) {
       console.error('All model attempts failed. Last error:', lastErrorDetail);
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable.', detail: lastErrorDetail }), {
@@ -145,7 +143,7 @@ export default async function handler(req) {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
- 
+
     // Re-stream Gemini's SSE output as clean, single-line "data: {json}\n\n"
     // events. Gemini's raw SSE can pretty-print JSON across multiple lines,
     // which breaks naive line-by-line client parsers. Buffering and
@@ -153,11 +151,11 @@ export default async function handler(req) {
     const geminiReader = geminiRes.body.getReader();
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
- 
+
     const stream = new ReadableStream({
       async start(controller) {
         let buffer = '';
- 
+
         function flushEvent(rawDataLines) {
           const jsonStr = rawDataLines.join('\n').trim();
           if (!jsonStr) return;
@@ -172,31 +170,32 @@ export default async function handler(req) {
             // Incomplete/invalid JSON for this event; drop it.
           }
         }
- 
+
         try {
           while (true) {
             const { done, value } = await geminiReader.read();
             if (done) break;
- 
+
             buffer += decoder.decode(value, { stream: true });
- 
+            console.log('RAW CHUNK FROM GEMINI:', JSON.stringify(buffer));
+
             // SSE events are separated by a blank line ("\n\n").
             let sepIndex;
             while ((sepIndex = buffer.indexOf('\n\n')) !== -1) {
               const rawEvent = buffer.slice(0, sepIndex);
               buffer = buffer.slice(sepIndex + 2);
- 
+
               // Each event may have multiple lines; keep only "data: " lines,
               // strip the prefix, and rejoin (handles multi-line JSON).
               const dataLines = rawEvent
                 .split('\n')
                 .filter((l) => l.startsWith('data: '))
                 .map((l) => l.slice(6));
- 
+
               if (dataLines.length) flushEvent(dataLines);
             }
           }
- 
+
           // Flush any trailing event without a final blank-line separator.
           if (buffer.trim()) {
             const dataLines = buffer
@@ -213,7 +212,7 @@ export default async function handler(req) {
         }
       },
     });
- 
+
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
