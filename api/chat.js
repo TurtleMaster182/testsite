@@ -87,25 +87,66 @@ export default async function handler(req) {
       });
     }
 
+    // Per-attempt timeout so one hung/slow model can't eat the whole
+    // function's execution budget and cause an upstream 504.
+    const PER_MODEL_TIMEOUT_MS = 8000;
+
     let geminiRes = null;
+    let lastErrorDetail = '';
 
     for (const model of MODELS) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
-      geminiRes = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: TEAM_CONTEXT }] },
-          contents: contents,
-          generationConfig: { maxOutputTokens: 500 },
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
 
-      if (geminiRes.ok) break;
+      try {
+        geminiRes = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: TEAM_CONTEXT }] },
+            contents: contents,
+            generationConfig: { maxOutputTokens: 500 },
+          }),
+          signal: controller.signal,
+        });
+
+        if (geminiRes.ok) {
+          clearTimeout(timeoutId);
+          break;
+        }
+
+        // Read the error body so we can tell auth errors (400/401/403 —
+        // retrying with another model won't help) from transient/rate-limit
+        // errors (429/5xx — worth trying the next model).
+        const status = geminiRes.status;
+        let bodyText = '';
+        try { bodyText = await geminiRes.text(); } catch (_) {}
+        lastErrorDetail = `[${model}] HTTP ${status}: ${bodyText.slice(0, 300)}`;
+        console.error('Gemini request failed:', lastErrorDetail);
+
+        if (status === 400 || status === 401 || status === 403) {
+          // Bad API key, bad request shape, or permission issue.
+          // No point burning time retrying every model.
+          clearTimeout(timeoutId);
+          geminiRes = null;
+          break;
+        }
+      } catch (err) {
+        lastErrorDetail = `[${model}] ${err.name === 'AbortError' ? 'timed out' : err.message}`;
+        console.error('Gemini request error:', lastErrorDetail);
+        geminiRes = null;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
 
     if (!geminiRes || !geminiRes.ok) {
-      return new Response(JSON.stringify({ error: 'Service temporarily unavailable.' }), { status: 503 });
+      console.error('All model attempts failed. Last error:', lastErrorDetail);
+      return new Response(JSON.stringify({ error: 'Service temporarily unavailable.', detail: lastErrorDetail }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
     }
 
     // Re-stream Gemini's SSE output as clean, single-line "data: {json}\n\n"
