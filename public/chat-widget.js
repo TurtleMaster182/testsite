@@ -97,32 +97,37 @@
       let fullReply = "";
       let buffer = "";
 
-      // Stream processing loop
+      // Stream processing loop.
+      // Server sends clean single-line events: "data: {\"text\":\"...\"}\n\n"
+      // (or "data: [DONE]\n\n" as a sentinel), so we split on the blank-line
+      // event separator rather than on individual "\n" characters.
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        // Decode incoming raw chunk into string buffer
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        
-        // Preserve incomplete tail ends across stream chunks
-        buffer = lines.pop() || "";
 
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith("data: ")) {
-            const rawJson = trimmed.slice(6);
-            try {
-              const parsed = JSON.parse(rawJson);
-              const textChunk = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "";
-              
+        let sepIndex;
+        while ((sepIndex = buffer.indexOf("\n\n")) !== -1) {
+          const rawEvent = buffer.slice(0, sepIndex);
+          buffer = buffer.slice(sepIndex + 2);
+
+          const line = rawEvent.trim();
+          if (!line.startsWith("data: ")) continue;
+
+          const rawData = line.slice(6).trim();
+          if (rawData === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(rawData);
+            const textChunk = parsed.text || "";
+            if (textChunk) {
               fullReply += textChunk;
               botMsgEl.textContent = fullReply;
               messagesEl.scrollTop = messagesEl.scrollHeight;
-            } catch (e) {
-              // Ignore partial line parses
             }
+          } catch (e) {
+            // Ignore malformed event
           }
         }
       }

@@ -39,10 +39,12 @@ A: [FILL IN]
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
 const MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  'gemini-1.5-pro'
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite'
 ];
 export const config = {
   runtime: 'edge',
@@ -106,8 +108,75 @@ export default async function handler(req) {
       return new Response(JSON.stringify({ error: 'Service temporarily unavailable.' }), { status: 503 });
     }
 
-    // Directly pipe the stream to the client with SSE headers
-    return new Response(geminiRes.body, {
+    // Re-stream Gemini's SSE output as clean, single-line "data: {json}\n\n"
+    // events. Gemini's raw SSE can pretty-print JSON across multiple lines,
+    // which breaks naive line-by-line client parsers. Buffering and
+    // re-emitting here guarantees one compact JSON object per event.
+    const geminiReader = geminiRes.body.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        let buffer = '';
+
+        function flushEvent(rawDataLines) {
+          const jsonStr = rawDataLines.join('\n').trim();
+          if (!jsonStr) return;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const textChunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (textChunk) {
+              const payload = JSON.stringify({ text: textChunk });
+              controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+            }
+          } catch (e) {
+            // Incomplete/invalid JSON for this event; drop it.
+          }
+        }
+
+        try {
+          while (true) {
+            const { done, value } = await geminiReader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // SSE events are separated by a blank line ("\n\n").
+            let sepIndex;
+            while ((sepIndex = buffer.indexOf('\n\n')) !== -1) {
+              const rawEvent = buffer.slice(0, sepIndex);
+              buffer = buffer.slice(sepIndex + 2);
+
+              // Each event may have multiple lines; keep only "data: " lines,
+              // strip the prefix, and rejoin (handles multi-line JSON).
+              const dataLines = rawEvent
+                .split('\n')
+                .filter((l) => l.startsWith('data: '))
+                .map((l) => l.slice(6));
+
+              if (dataLines.length) flushEvent(dataLines);
+            }
+          }
+
+          // Flush any trailing event without a final blank-line separator.
+          if (buffer.trim()) {
+            const dataLines = buffer
+              .split('\n')
+              .filter((l) => l.startsWith('data: '))
+              .map((l) => l.slice(6));
+            if (dataLines.length) flushEvent(dataLines);
+          }
+        } catch (e) {
+          console.error('Stream error:', e);
+        } finally {
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
