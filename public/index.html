@@ -1079,9 +1079,48 @@
       aspect-ratio: 1 / 1;
       width: 100%;
       min-height: 120px;
-      /* Prevents 0-height collapse while loading */
-      overflow: hidden;
+      overflow: visible;
+      /* Allows image to expand beyond tile boundaries */
       background: var(--graphite);
+      cursor: pointer;
+      transition: z-index 0s;
+      z-index: 1;
+    }
+
+    .robo-tile img,
+    .robo-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Default cropped state */
+      display: block;
+      transition: transform 0.35s var(--ease), object-fit 0.35s var(--ease), box-shadow 0.35s var(--ease), border-radius 0.35s var(--ease);
+      transform-origin: center center;
+    }
+    /* Pop-out Effect: Full ratio & overlay */
+.robo-tile:hover {
+  z-index: 999; /* Higher z-index to overlay adjacent tiles */
+}
+
+    .robo-tile:hover img,
+    .robo-tile:hover video {
+      position: relative;
+      z-index: 999;
+      height: auto;
+      max-height: 320px;
+      /* Keeps ultra-tall photos constrained within screen */
+      object-fit: contain;
+      /* Shows full image ratio without cropping */
+      transform: scale(1.35);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px var(--line);
+      border-radius: 6px;
+      background: var(--black);
+    }
+
+    /* Pop-out effect on hover */
+    /* Pause the parent marquee animation when hovering over any tile */
+    .robo-modal-media-track:has(.robo-tile:hover) {
+      animation-play-state: paused;
     }
 
     @keyframes roboModalScroll {
@@ -1092,14 +1131,6 @@
       100% {
         transform: translateY(calc(-1 * var(--scroll-distance, 0px)));
       }
-    }
-
-    .robo-tile img,
-    .robo-tile video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
     }
 
     .robo-tile .robo-tile-play {
