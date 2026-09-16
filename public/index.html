@@ -314,6 +314,92 @@
   .drag-hint .arrow{width:40px;height:1px;background:var(--off-dim);position:relative;}
   .drag-hint .arrow::after{content:'';position:absolute;right:0;top:-3px;width:7px;height:7px;border-right:1px solid var(--off-dim);border-top:1px solid var(--off-dim);transform:rotate(45deg);}
 
+  /* ---------- ROBOT DETAIL MODAL ---------- */
+  .season-card{cursor:pointer;}
+  .robo-modal{
+    position:fixed;inset:0;z-index:500;
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;
+    transition:opacity .35s var(--ease);
+    padding:32px;
+  }
+  .robo-modal.open{opacity:1;pointer-events:auto;}
+  .robo-modal-backdrop{
+    position:absolute;inset:0;background:rgba(6,7,6,0.82);backdrop-filter:blur(6px);
+  }
+  .robo-modal-window{
+    position:relative;width:min(1100px, 100%);max-height:min(780px, 92vh);
+    background:var(--panel);border:1px solid var(--line);
+    box-shadow:0 60px 120px -30px rgba(0,0,0,0.6);
+    transform:translateY(24px) scale(0.98);
+    transition:transform .4s var(--ease);
+    overflow:hidden;
+  }
+  .robo-modal.open .robo-modal-window{transform:translateY(0) scale(1);}
+  .robo-modal-close{
+    position:absolute;top:16px;right:16px;z-index:5;
+    width:38px;height:38px;border:1px solid var(--line);background:var(--black);color:var(--off);
+    font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background .3s ease, border-color .3s ease, transform .3s ease;
+  }
+  .robo-modal-close:hover{background:var(--red);border-color:var(--red);transform:rotate(90deg);}
+  .robo-modal-grid{
+    display:grid;grid-template-columns:360px 1fr;
+    height:min(780px, 92vh);
+  }
+  .robo-modal-card{
+    position:relative;border-right:1px solid var(--line);
+    background:linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+    overflow-y:auto;
+  }
+  /* Reuse .robo-card look inside the modal, but let it fill the panel */
+  .robo-modal-card .robo-card{
+    position:relative;width:100%;height:auto;aspect-ratio:3/4;max-width:none;
+    border:none;
+  }
+  .robo-modal-media{position:relative;overflow:hidden;background:var(--black);}
+  .robo-modal-media-viewport{position:absolute;inset:0;overflow:hidden;}
+  .robo-modal-media-track{
+    display:grid;grid-template-columns:repeat(3, 1fr);gap:2px;
+    padding:2px;
+    will-change:transform;
+  }
+  .robo-modal-track-anim{
+    animation:roboModalScroll var(--scroll-duration, 22s) linear infinite;
+  }
+  .robo-modal-track-anim:hover{animation-play-state:paused;}
+  @keyframes roboModalScroll{
+    0%{transform:translateY(0);}
+    100%{transform:translateY(calc(-1 * var(--scroll-distance, 0px)));}
+  }
+  .robo-tile{
+    position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--graphite);
+  }
+  .robo-tile img, .robo-tile video{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .robo-tile .robo-tile-play{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  }
+  .robo-tile .robo-tile-play::before{
+    content:'';width:0;height:0;
+    border-top:9px solid transparent;border-bottom:9px solid transparent;
+    border-left:14px solid rgba(245,243,238,0.9);
+    filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  }
+  .robo-modal-empty{
+    grid-column:1/-1;padding:60px 24px;text-align:center;color:var(--off-dim);font-size:13px;
+    letter-spacing:0.04em;text-transform:uppercase;
+  }
+
+  @media (max-width:860px){
+    .robo-modal{padding:14px;}
+    .robo-modal-grid{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:min(90vh, 780px);}
+    .robo-modal-card{border-right:none;border-bottom:1px solid var(--line);max-height:280px;}
+    .robo-modal-card .robo-card{aspect-ratio:auto;height:100%;}
+  }
+
   /* ---------- TEAM ---------- */
   .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--line);border:1px solid var(--line);}
   .team-item{
@@ -471,7 +557,7 @@
 </div>
 
 <header id="siteHeader">
-  <div class="logo">PEPPERS<span>#19044 v11</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
+  <div class="logo">PEPPERS<span>#19044 v12</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
   <nav>
     <ul>
       <li><a href="#about">Team</a></li>
@@ -571,7 +657,7 @@
   </div>
   <div class="wrap seasons-wrap">
     <div class="seasons-track" id="seasonsTrack">
-      <div class="season-card">
+      <div class="season-card" data-season-id="2025-26">
         <div class="season-media season-cube-frame">
           <canvas class="robo-canvas" data-robo-cube></canvas>
           <div class="season-year">2025–26</div>
@@ -582,7 +668,7 @@
           <p>Our current competition robot — modular intake, high-speed scoring arm, and a drivetrain tuned for tight field control.</p>
         </div>
       </div>
-      <div class="season-card">
+      <div class="season-card" data-season-id="2024-25">
         <div class="season-media season-cube-frame">
           <canvas class="robo-canvas" data-robo-cube></canvas>
           <div class="season-year">2024–25</div>
@@ -593,7 +679,7 @@
           <p>Our third-season bot — first robot with a full swerve drivetrain and autonomous scoring routine.</p>
         </div>
       </div>
-      <div class="season-card">
+      <div class="season-card" data-season-id="2023-24">
         <div class="season-media season-cube-frame">
           <canvas class="robo-canvas" data-robo-cube></canvas>
           <div class="season-year">2023–24</div>
@@ -604,7 +690,7 @@
           <p>A total rebuild focused on manufacturability — recognized for clean CAD and documentation.</p>
         </div>
       </div>
-      <div class="season-card">
+      <div class="season-card" data-season-id="2022-23">
         <div class="season-media season-cube-frame">
           <canvas class="robo-canvas" data-robo-cube></canvas>
           <div class="season-year">2022–23</div>
@@ -615,7 +701,18 @@
           <p>Where it all started. Built from scratch by 6 rookies with zero prior robotics experience.</p>
         </div>
       </div>
-      <div class="season-card">
+      <div class="season-card" data-season-id="kickathon">
+        <div class="season-media">
+          <img src="public/2026-2027/V1.png" alt="Kickathon robot placeholder photo">
+          <div class="season-year">2026–27</div>
+        </div>
+        <div class="season-body">
+          <span class="tag">Kickathon</span>
+          <h3>Kickathon Robot</h3>
+          <p>Our Kickathon build — a fast, early-season prototype put together in the first days after kickoff.</p>
+        </div>
+      </div>
+      <div class="season-card" data-season-id="coming-soon">
         <div class="season-media">
           <img src="https://picsum.photos/id/1025/700/440" alt="Next season concept placeholder photo">
           <div class="season-year">2026–27</div>
@@ -630,6 +727,27 @@
     <div class="drag-hint"><div class="arrow"></div> Drag to explore</div>
   </div>
 </section>
+
+<!-- ROBOT DETAIL MODAL -->
+<div class="robo-modal" id="roboModal" aria-hidden="true">
+  <div class="robo-modal-backdrop" data-modal-close></div>
+  <div class="robo-modal-window" role="dialog" aria-modal="true" aria-labelledby="roboModalTitle">
+    <button class="robo-modal-close" data-modal-close aria-label="Close">✕</button>
+    <div class="robo-modal-grid">
+      <div class="robo-modal-card" id="roboModalCard">
+        <!-- populated by JS: a copy of the season's card -->
+      </div>
+      <div class="robo-modal-media">
+        <div class="robo-modal-media-viewport">
+          <div class="robo-modal-media-track" id="roboModalTrack">
+            <!-- populated by JS: 3-column tiled photos/videos -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- SPONSORS MARQUEE -->
 <section id="sponsors" style="padding:0;">
@@ -960,6 +1078,200 @@
       });
     });
   }
+
+  // ---------- ROBOT DETAIL MODAL ----------
+  // Modular media registry: add entries here to populate each robot's
+  // popup gallery. Nothing else needs to change — new items are
+  // automatically tiled into the 3-column grid and, if there are enough
+  // to overflow the panel, the whole track auto-scrolls upward as a loop.
+  //
+  // type: 'image' | 'video'
+  // src:  path or URL to the file
+  // poster (optional, video only): thumbnail shown before playback
+  const SEASON_MEDIA = {
+    'kickathon': [
+      { type: 'image', src: 'public/2026-2027/V1.png' },
+      // Add more like:
+      // { type: 'image', src: 'public/2026-2027/V2.png' },
+      // { type: 'video', src: 'public/2026-2027/build-clip.mp4', poster: 'public/2026-2027/build-clip-poster.png' },
+    ],
+    '2025-26': [],
+    '2024-25': [],
+    '2023-24': [],
+    '2022-23': [],
+    'coming-soon': [
+      { type: 'image', src: 'https://picsum.photos/id/1025/700/440' },
+    ],
+  };
+
+  const roboModal = document.getElementById('roboModal');
+  const roboModalCard = document.getElementById('roboModalCard');
+  const roboModalTrack = document.getElementById('roboModalTrack');
+  let lastFocusedEl = null;
+
+  function buildTile(item){
+    const tile = document.createElement('div');
+    tile.className = 'robo-tile';
+    if (item.type === 'video') {
+      const video = document.createElement('video');
+      video.src = item.src;
+      if (item.poster) video.poster = item.poster;
+      video.controls = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      tile.appendChild(video);
+    } else {
+      const img = document.createElement('img');
+      img.src = item.src;
+      img.alt = item.alt || 'Robot media';
+      img.loading = 'lazy';
+      tile.appendChild(img);
+    }
+    return tile;
+  }
+
+  function populateGallery(seasonId){
+    const items = SEASON_MEDIA[seasonId] || [];
+    roboModalTrack.innerHTML = '';
+    roboModalTrack.classList.remove('robo-modal-track-anim');
+    roboModalTrack.style.removeProperty('--scroll-duration');
+    roboModalTrack.style.removeProperty('--scroll-distance');
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'robo-modal-empty';
+      empty.textContent = 'No photos or videos yet — check back soon.';
+      roboModalTrack.appendChild(empty);
+      return;
+    }
+
+    items.forEach(item => roboModalTrack.appendChild(buildTile(item)));
+
+    // If the tiled content is taller than its viewport, duplicate the set
+    // once and animate a seamless upward loop (a vertical marquee).
+    requestAnimationFrame(() => {
+      const viewport = roboModalTrack.parentElement;
+      const contentHeight = roboModalTrack.scrollHeight;
+      const viewportHeight = viewport.clientHeight;
+
+      if (contentHeight > viewportHeight) {
+        // Duplicate tiles so the loop has no visible seam
+        const clones = Array.from(roboModalTrack.children).map(el => el.cloneNode(true));
+        clones.forEach(clone => roboModalTrack.appendChild(clone));
+
+        const distance = contentHeight; // scroll exactly one full set's height
+        const pxPerSecond = 34; // slideshow speed
+        const duration = Math.max(distance / pxPerSecond, 8);
+
+        roboModalTrack.style.setProperty('--scroll-distance', `${distance}px`);
+        roboModalTrack.style.setProperty('--scroll-duration', `${duration}s`);
+        roboModalTrack.classList.add('robo-modal-track-anim');
+      }
+    });
+  }
+
+  function populateCard(seasonCard){
+    // Clone the season card's existing robo-media/robo-body content into
+    // a robo-card-styled panel, so the modal always mirrors what's on
+    // the actual card (image, cube canvas, title, tag, description).
+    const media = seasonCard.querySelector('.season-media');
+    const body = seasonCard.querySelector('.season-body');
+
+    const card = document.createElement('div');
+    card.className = 'robo-card';
+
+    const mediaWrap = document.createElement('div');
+    mediaWrap.className = 'robo-media';
+    if (media) {
+      Array.from(media.children).forEach(child => {
+        if (child.classList.contains('season-year')) return; // shown as tag instead
+        mediaWrap.appendChild(child.cloneNode(true));
+      });
+    }
+    card.appendChild(mediaWrap);
+
+    const tagText = body?.querySelector('.tag')?.textContent || '';
+    const yearText = media?.querySelector('.season-year')?.textContent || '';
+    if (tagText) {
+      const tag = document.createElement('div');
+      tag.className = 'robo-tag';
+      tag.textContent = tagText;
+      card.appendChild(tag);
+    }
+    if (yearText) {
+      const num = document.createElement('div');
+      num.className = 'robo-num';
+      num.textContent = yearText;
+      card.appendChild(num);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'robo-info';
+    const h3 = document.createElement('h3');
+    h3.id = 'roboModalTitle';
+    h3.textContent = body?.querySelector('h3')?.textContent || 'Robot';
+    const p = document.createElement('p');
+    p.textContent = body?.querySelector('p')?.textContent || '';
+    info.appendChild(h3);
+    info.appendChild(p);
+    card.appendChild(info);
+
+    roboModalCard.innerHTML = '';
+    roboModalCard.appendChild(card);
+
+    // Re-initialize any 3D cube canvas that got cloned into the modal
+    const clonedCanvas = mediaWrap.querySelector('[data-robo-cube]');
+    if (clonedCanvas && window.THREE) {
+      const cubeCtl = initRoboCube(clonedCanvas, { size: 1.6 });
+      mediaWrap.addEventListener('mousemove', (e) => {
+        const rect = mediaWrap.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const nx = pixelOffsetToUnit(e.clientX - centerX, rect.width);
+        const ny = pixelOffsetToUnit(e.clientY - centerY, rect.height);
+        cubeCtl.setFromNormalized(nx, ny);
+      });
+      mediaWrap.addEventListener('mouseleave', () => cubeCtl.setFromNormalized(0, 0));
+    }
+  }
+
+  function openRoboModal(seasonCard){
+    const seasonId = seasonCard.dataset.seasonId;
+    populateCard(seasonCard);
+    populateGallery(seasonId);
+    lastFocusedEl = document.activeElement;
+    roboModal.classList.add('open');
+    roboModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    roboModal.querySelector('.robo-modal-close').focus();
+  }
+
+  function closeRoboModal(){
+    roboModal.classList.remove('open');
+    roboModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (lastFocusedEl) lastFocusedEl.focus();
+  }
+
+  document.querySelectorAll('.season-card[data-season-id]').forEach(card => {
+    card.addEventListener('click', () => openRoboModal(card));
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openRoboModal(card);
+      }
+    });
+  });
+
+  roboModal.querySelectorAll('[data-modal-close]').forEach(el => {
+    el.addEventListener('click', closeRoboModal);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && roboModal.classList.contains('open')) closeRoboModal();
+  });
 
   // ---------- Scroll reveal ----------
   const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
