@@ -1,1322 +1,2378 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Peppers Robotics 19044</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<style>
-  :root{
-    --black:#0A0B0D;
-    --panel:#131513;
-    --graphite:#2A2D29;
-    --off:#F5F3EE;
-    --off-dim:#B9B7B0;
-    --red:#E8482C;
-    --red-dim:#8f2c1b;
-    --sage:#8C9A8C;
-    --line: rgba(245,243,238,0.12);
-    --ease: cubic-bezier(.22,1,.36,1);
-  }
-  :root.light-mode{
-    --black:#FFFFFF;
-    --panel:#F5F3EE;
-    --graphite:#E8E6E0;
-    --off:#0A0B0D;
-    --off-dim:#666666;
-    --red:#E8482C;
-    --red-dim:#ff6b4a;
-    --sage:#5a7a5a;
-    --line: rgba(10,11,13,0.12);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--black);
-    color:var(--off);
-    font-family:'Inter',sans-serif;
-    overflow-x:hidden;
-    cursor:default;
-    transition:background .4s var(--ease), color .4s var(--ease);
-  }
-  ::selection{background:var(--red);color:var(--off);}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peppers Robotics 19044</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    :root {
+      --black: #0A0B0D;
+      --panel: #131513;
+      --graphite: #2A2D29;
+      --off: #F5F3EE;
+      --off-dim: #B9B7B0;
+      --red: #E8482C;
+      --red-dim: #8f2c1b;
+      --sage: #8C9A8C;
+      --line: rgba(245, 243, 238, 0.12);
+      --ease: cubic-bezier(.22, 1, .36, 1);
+    }
 
-  h1,h2,h3,.display{
-    font-family:'Archivo',sans-serif;
-    font-weight:800;
-    letter-spacing:0.005em;
-    text-transform:uppercase;
-    line-height:0.92;
-  }
+    :root.light-mode {
+      --black: #FFFFFF;
+      --panel: #F5F3EE;
+      --graphite: #E8E6E0;
+      --off: #0A0B0D;
+      --off-dim: #666666;
+      --red: #E8482C;
+      --red-dim: #ff6b4a;
+      --sage: #5a7a5a;
+      --line: rgba(10, 11, 13, 0.12);
+    }
 
-  a{color:inherit;text-decoration:none;}
-  img{display:block;max-width:100%;}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* ---------- CUSTOM CURSOR ---------- */
-  .cursor-dot{
-    position:fixed;top:0;left:0;width:8px;height:8px;border-radius:50%;
-    background:var(--red);pointer-events:none;z-index:9999;
-    transform:translate(-50%,-50%);
-    transition:width .25s var(--ease),height .25s var(--ease),background .25s var(--ease);
-    mix-blend-mode:difference;
-  }
-  .cursor-dot.big{width:56px;height:56px;background:var(--off);}
-  @media (hover:none){.cursor-dot{display:none;}}
+    html {
+      scroll-behavior: smooth;
+    }
 
-  /* ---------- PRELOADER ---------- */
-  #preloader{
-    position:fixed;inset:0;z-index:200;background:var(--black);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-    transition:transform .9s var(--ease), opacity .9s var(--ease);
-  }
-  #preloader.done{transform:translateY(-100%);opacity:0.4;pointer-events:none;}
-  .pre-num{font-family:'Archivo';font-weight:900;font-size:14vw;line-height:1;color:var(--off);letter-spacing:-0.03em;}
-  .pre-bar{width:220px;height:2px;background:var(--line);overflow:hidden;}
-  .pre-bar span{display:block;height:100%;width:0%;background:var(--red);transition:width 1.4s var(--ease);}
-  .pre-label{font-size:11px;letter-spacing:0.15em;color:var(--off-dim);text-transform:uppercase;}
+    body {
+      background: var(--black);
+      color: var(--off);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      cursor: default;
+      transition: background .4s var(--ease), color .4s var(--ease);
+    }
 
-  /* ---------- NAV ---------- */
-  header{
-    position:fixed;top:0;left:0;right:0;z-index:100;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:22px 40px;
-    mix-blend-mode:normal;
-    transition:background .4s var(--ease), padding .4s var(--ease), border-color .4s var(--ease);
-    border-bottom:1px solid transparent;
-  }
-  header.scrolled{background:rgba(10,11,13,0.85);backdrop-filter:blur(10px);padding:14px 40px;border-color:var(--line);}
-  .logo{
-    display:flex;align-items:baseline;gap:10px;font-family:'Archivo';font-weight:900;font-size:20px;letter-spacing:-0.01em;
-  }
-  .logo span{color:var(--red);}
-  .logo small{font-family:'Inter';font-weight:500;font-size:11px;color:var(--off-dim);letter-spacing:0.05em;}
-  .theme-toggle{
-    background:none;border:none;font-size:20px;cursor:pointer;
-    padding:4px 8px;transition:transform .2s var(--ease);
-    display:flex;align-items:center;gap:6px;margin-left:12px;
-  }
-  .theme-toggle:hover{transform:scale(1.1);}
-  .theme-toggle-label{font-size:11px;color:var(--off-dim);display:none;}
-  @media (max-width:768px){.theme-toggle-label{display:inline;}}
-  nav ul{display:flex;gap:36px;list-style:none;}
-  nav a{
-    font-size:13px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;
-    position:relative;padding-bottom:4px;
-  }
-  nav a::after{
-    content:'';position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--red);
-    transition:width .35s var(--ease);
-  }
-  nav a:hover::after{width:100%;}
-  .nav-cta{
-    border:1px solid var(--line);padding:10px 20px;font-size:12px;font-weight:600;
-    letter-spacing:0.04em;text-transform:uppercase;transition:all .3s var(--ease);
-  }
-  .nav-cta:hover{background:var(--red);border-color:var(--red);}
-  .burger{display:none;}
+    ::selection {
+      background: var(--red);
+      color: var(--off);
+    }
 
-  /* ---------- INTRO VIDEO ---------- */
-  .intro-video{
-    position:fixed;inset:0;z-index:-1;width:100vw;height:100vh;background:#000;
-  }
-  .intro-video-frame{
-    position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#000;
-  }
-  .intro-video-frame video{
-    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
-    will-change:opacity;
-  }
-  .intro-video-spacer{height:100svh;width:100%;}
+    h1,
+    h2,
+    h3,
+    .display {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.005em;
+      text-transform: uppercase;
+      line-height: 0.92;
+    }
 
-  /* ---------- HERO ---------- */
-  .hero{
-    position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;
-    padding:120px 40px 60px;
-    background:
-      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(232,72,44,0.14), transparent 60%),
-      var(--black);
-    overflow:hidden;
-  }
-  .hero-grid{
-    display:grid;grid-template-columns:1.2fr 1fr;gap:60px;align-items:center;
-    max-width:1400px;margin:0 auto;width:100%;
-  }
-  .hero-eyebrow{
-    display:flex;align-items:center;gap:10px;margin-bottom:22px;
-    font-size:13px;color:var(--sage);letter-spacing:0.04em;font-weight:600;
-  }
-  .dot-live{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:pulse 1.8s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  .hero h1{
-    font-size:clamp(48px,7vw,104px);
-    color:var(--off);
-  }
-  .hero h1 em{
-    font-style:normal;color:var(--red);
-  }
-  .heat-gif{
-    display:inline-block;
-    height:clamp(40px, 6vw, 84px);
-    width:auto;
-    vertical-align:middle;
-    image-rendering:auto;
-  }
-  .hero p{
-    max-width:44ch;margin-top:24px;color:var(--off-dim);font-size:17px;line-height:1.6;
-  }
-  .hero-actions{display:flex;gap:18px;margin-top:40px;flex-wrap:wrap;}
-  .btn{
-    display:inline-flex;align-items:center;gap:10px;
-    padding:16px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
-    position:relative;overflow:hidden;border:1px solid var(--off);
-    transition:color .4s var(--ease), border-color .4s var(--ease);
-  }
-  .btn span{position:relative;z-index:2;}
-  .btn::before{
-    content:'';position:absolute;inset:0;background:var(--off);
-    transform:translateY(101%);transition:transform .4s var(--ease);z-index:1;
-  }
-  .btn.solid{background:var(--off);color:var(--black);}
-  .btn.solid::before{background:var(--red);}
-  .btn.solid:hover{color:var(--off);border-color:var(--red);}
-  .btn.ghost{color:var(--off);}
-  .btn.ghost:hover{color:var(--black);}
-  .btn.ghost:hover::before{transform:translateY(0);}
-  .btn.solid:hover::before{transform:translateY(0);}
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-  /* ---------- 3D ROBOT CARD ---------- */
-  .card-stage{
-    perspective:1400px;display:flex;justify-content:center;align-items:center;
-  }
-  .robo-card{
-    position:relative;width:100%;max-width:420px;aspect-ratio:3/4;
-    border:1px solid var(--line);
-    background:linear-gradient(160deg, var(--panel), #0d0e0c 70%);
-    transform-style:preserve-3d;
-    transition:transform .15s ease-out, box-shadow .3s ease;
-    will-change:transform;
-  }
-  .robo-card:hover{box-shadow:0 40px 80px -20px rgba(232,72,44,0.35);}
-  .robo-media{
-    position:absolute;inset:0;overflow:hidden;
-    background:radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
-  }
-  .robo-media img{width:100%;height:100%;object-fit:cover;transform:translateZ(0);opacity:0.9;}
-  .robo-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;}
-  .robo-media::after{
-    content:'';position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(10,11,13,0) 45%, rgba(10,11,13,0.95) 100%);
-    pointer-events:none;
-  }
-  .frame-axis{
-    position:absolute;inset:18px;border:1px dashed rgba(245,243,238,0.08);pointer-events:none;
-  }
-  .frame-axis::before, .frame-axis::after{
-    content:'';position:absolute;background:rgba(245,243,238,0.08);
-  }
-  .frame-axis::before{left:50%;top:0;bottom:0;width:1px;}
-  .frame-axis::after{top:50%;left:0;right:0;height:1px;}
-  .robo-glare{
-    position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;
-    background:radial-gradient(circle at var(--gx,50%) var(--gy,50%), rgba(255,255,255,0.35), transparent 55%);
-    opacity:0;transition:opacity .3s ease;
-  }
-  .robo-card:hover .robo-glare{opacity:1;}
-  .robo-tag{
-    position:absolute;top:20px;left:20px;background:var(--red);color:var(--off);
-    font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
-    padding:6px 12px;transform:translateZ(50px);
-  }
-  .robo-num{
-    position:absolute;top:20px;right:20px;font-family:'Archivo';font-weight:900;
-    font-size:14px;color:var(--off-dim);transform:translateZ(50px);
-  }
-  .robo-info{
-    position:absolute;bottom:0;left:0;right:0;padding:26px;transform:translateZ(60px);
-  }
-  .robo-info h3{font-size:30px;color:var(--off);}
-  .robo-info p{font-size:13px;color:var(--off-dim);margin-top:6px;}
-  .robo-stats{display:flex;gap:18px;margin-top:16px;}
-  .robo-stats div{font-size:11px;color:var(--sage);letter-spacing:0.04em;text-transform:uppercase;}
-  .robo-stats b{display:block;font-family:'Archivo';font-size:18px;color:var(--off);font-weight:800;}
-  .card-caption{text-align:center;margin-top:18px;font-size:12px;color:var(--off-dim);letter-spacing:0.03em;}
+    img {
+      display: block;
+      max-width: 100%;
+    }
 
-  .scroll-cue{
-    position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
-    display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--off-dim);font-size:11px;
-    letter-spacing:0.1em;text-transform:uppercase;
-  }
-  .scroll-cue .line{width:1px;height:36px;background:var(--line);position:relative;overflow:hidden;}
-  .scroll-cue .line span{position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--red);animation:scrollline 1.8s infinite var(--ease);}
-  @keyframes scrollline{0%{top:-100%;}50%{top:0;}100%{top:100%;}}
+    /* ---------- CUSTOM CURSOR ---------- */
+    .cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .25s var(--ease), height .25s var(--ease), background .25s var(--ease);
+      mix-blend-mode: difference;
+    }
 
-  /* ---------- SECTION SHELL ---------- */
-  section{position:relative;padding:140px 40px;}
-  .wrap{max-width:1400px;margin:0 auto;}
-  .section-head{
-    display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin-bottom:70px;
-  }
-  .section-head .label{color:var(--red);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:16px;display:block;}
-  .section-head h2{font-size:clamp(34px,4.5vw,56px);}
-  .section-head p{color:var(--off-dim);font-size:16px;line-height:1.6;max-width:42ch;}
+    .cursor-dot.big {
+      width: 56px;
+      height: 56px;
+      background: var(--off);
+    }
 
-  .reveal{opacity:0;transform:translateY(50px);transition:opacity 1s var(--ease), transform 1s var(--ease);}
-  .reveal.in{opacity:1;transform:translateY(0);}
-  .reveal-scale{opacity:0;transform:scale(0.92);transition:opacity 1s var(--ease), transform 1.1s var(--ease);}
-  .reveal-scale.in{opacity:1;transform:scale(1);}
+    @media (hover:none) {
+      .cursor-dot {
+        display: none;
+      }
+    }
 
-  /* ---------- ABOUT / MISSION ---------- */
-  .mission{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-  .mission-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:80px;align-items:center;}
-  .mission-media{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--graphite);}
-  .mission-media img{width:100%;height:100%;object-fit:cover;}
-  .mission-num{
-    position:absolute;bottom:-30px;right:-20px;font-family:'Archivo';font-weight:900;
-    font-size:180px;color:var(--black);-webkit-text-stroke:1px var(--line);opacity:0.6;line-height:1;
-    pointer-events:none;
-  }
-  .mission-text h2{font-size:clamp(30px,3.6vw,44px);margin-bottom:24px;}
-  .mission-text p{color:var(--off-dim);font-size:16px;line-height:1.75;margin-bottom:18px;max-width:50ch;}
-  .mission-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;border-top:1px solid var(--line);padding-top:28px;}
-  .mission-stats div b{font-family:'Archivo';font-size:36px;font-weight:900;display:block;color:var(--off);}
-  .mission-stats div span{font-size:12px;color:var(--off-dim);text-transform:uppercase;letter-spacing:0.04em;}
+    /* ---------- PRELOADER ---------- */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: transform .9s var(--ease), opacity .9s var(--ease);
+    }
 
-  /* ---------- SEASONS HORIZONTAL SCROLL ---------- */
-  .seasons-wrap{overflow:hidden;}
-  .seasons-track{
-    display:flex;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:20px;
-    scrollbar-width:none;
-  }
-  .seasons-track::-webkit-scrollbar{display:none;}
-  .season-card{
-    flex:0 0 auto;width:340px;scroll-snap-align:start;
-    border:1px solid var(--line);background:var(--panel);
-    transition:transform .5s var(--ease), border-color .4s ease;
-  }
-  .season-card:hover{transform:translateY(-10px);border-color:var(--red);}
-  .season-media{aspect-ratio:16/10;overflow:hidden;position:relative;}
-  .season-media img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease);}
-  .season-card:hover .season-media img{transform:scale(1.08);}
-  .season-cube-frame{background:radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);}
-  .season-cube-frame .robo-canvas{position:absolute;inset:0;width:100%;height:100%;}
-  .season-year{
-    position:absolute;top:14px;left:14px;font-family:'Archivo';font-weight:900;font-size:13px;
-    background:var(--black);padding:5px 10px;letter-spacing:0.04em;
-  }
-  .season-body{padding:22px;}
-  .season-body .tag{font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;}
-  .season-body h3{font-size:22px;margin-top:10px;}
-  .season-body p{font-size:13.5px;color:var(--off-dim);margin-top:10px;line-height:1.55;}
-  .drag-hint{display:flex;align-items:center;gap:10px;margin-top:24px;color:var(--off-dim);font-size:12px;letter-spacing:0.04em;text-transform:uppercase;}
-  .drag-hint .arrow{width:40px;height:1px;background:var(--off-dim);position:relative;}
-  .drag-hint .arrow::after{content:'';position:absolute;right:0;top:-3px;width:7px;height:7px;border-right:1px solid var(--off-dim);border-top:1px solid var(--off-dim);transform:rotate(45deg);}
+    #preloader.done {
+      transform: translateY(-100%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
 
-  /* ---------- ROBOT DETAIL MODAL ---------- */
-  .season-card{cursor:pointer;}
-  .robo-modal{
-    position:fixed;inset:0;z-index:500;
-    display:flex;align-items:center;justify-content:center;
-    opacity:0;pointer-events:none;
-    transition:opacity .35s var(--ease);
-    padding:32px;
-  }
-  .robo-modal.open{opacity:1;pointer-events:auto;}
-  .robo-modal-backdrop{
-    position:absolute;inset:0;background:rgba(6,7,6,0.82);backdrop-filter:blur(6px);
-  }
-  .robo-modal-window{
-    position:relative;width:min(1100px, 100%);max-height:min(780px, 92vh);
-    background:var(--panel);border:1px solid var(--line);
-    box-shadow:0 60px 120px -30px rgba(0,0,0,0.6);
-    transform:translateY(24px) scale(0.98);
-    transition:transform .4s var(--ease);
-    overflow:hidden;
-  }
-  .robo-modal.open .robo-modal-window{transform:translateY(0) scale(1);}
-  .robo-modal-close{
-    position:absolute;top:16px;right:16px;z-index:5;
-    width:38px;height:38px;border:1px solid var(--line);background:var(--black);color:var(--off);
-    font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition:background .3s ease, border-color .3s ease, transform .3s ease;
-  }
-  .robo-modal-close:hover{background:var(--red);border-color:var(--red);transform:rotate(90deg);}
-  .robo-modal-grid{
-    display:grid;grid-template-columns:360px 1fr;
-    height:min(780px, 92vh);
-  }
-  .robo-modal-card{
-    position:relative;border-right:1px solid var(--line);
-    background:linear-gradient(160deg, var(--panel), #0d0e0c 70%);
-    overflow-y:auto;
-  }
-  /* Reuse .robo-card look inside the modal, but let it fill the panel */
-  .robo-modal-card .robo-card{
-    position:relative;width:100%;height:auto;aspect-ratio:3/4;max-width:none;
-    border:none;
-  }
-  .robo-modal-media{position:relative;overflow:hidden;background:var(--black);}
-  .robo-modal-media-viewport{position:absolute;inset:0;overflow:hidden;}
-  .robo-modal-media-track{
-    display:grid;grid-template-columns:repeat(3, 1fr);gap:2px;
-    padding:2px;
-    will-change:transform;
-  }
-  .robo-modal-track-anim{
-    animation:roboModalScroll var(--scroll-duration, 22s) linear infinite;
-  }
-  .robo-modal-track-anim:hover{animation-play-state:paused;}
-  @keyframes roboModalScroll{
-    0%{transform:translateY(0);}
-    100%{transform:translateY(calc(-1 * var(--scroll-distance, 0px)));}
-  }
-  .robo-tile{
-    position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--graphite);
-  }
-  .robo-tile img, .robo-tile video{
-    width:100%;height:100%;object-fit:cover;display:block;
-  }
-  .robo-tile .robo-tile-play{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    pointer-events:none;
-  }
-  .robo-tile .robo-tile-play::before{
-    content:'';width:0;height:0;
-    border-top:9px solid transparent;border-bottom:9px solid transparent;
-    border-left:14px solid rgba(245,243,238,0.9);
-    filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));
-  }
-  .robo-modal-empty{
-    grid-column:1/-1;padding:60px 24px;text-align:center;color:var(--off-dim);font-size:13px;
-    letter-spacing:0.04em;text-transform:uppercase;
-  }
+    .pre-num {
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 14vw;
+      line-height: 1;
+      color: var(--off);
+      letter-spacing: -0.03em;
+    }
 
-  @media (max-width:860px){
-    .robo-modal{padding:14px;}
-    .robo-modal-grid{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:min(90vh, 780px);}
-    .robo-modal-card{border-right:none;border-bottom:1px solid var(--line);max-height:280px;}
-    .robo-modal-card .robo-card{aspect-ratio:auto;height:100%;}
-  }
+    .pre-bar {
+      width: 220px;
+      height: 2px;
+      background: var(--line);
+      overflow: hidden;
+    }
 
-  /* ---------- TEAM ---------- */
-  .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--line);border:1px solid var(--line);}
-  .team-item{
-    background:var(--black);padding:34px 26px;position:relative;overflow:hidden;
-    transition:background .4s ease;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;
-  }
-  .team-item::before{
-    content:'';position:absolute;inset:0;background:var(--panel);opacity:0;transform:scale(1.1);
-    transition:opacity .4s ease, transform .5s var(--ease);
-  }
-  .team-item:hover::before{opacity:1;transform:scale(1);}
-  .team-role{position:relative;font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:10px;}
-  .team-name{position:relative;font-family:'Archivo';font-size:24px;font-weight:800;}
-  .team-sub{position:relative;font-size:12.5px;color:var(--off-dim);margin-top:8px;}
-  .team-avatar{
-    position:relative;width:46px;height:46px;border-radius:50%;background:var(--graphite);
-    display:flex;align-items:center;justify-content:center;font-family:'Archivo';font-weight:800;
-    font-size:14px;margin-bottom:20px;border:1px solid var(--line);
-  }
+    .pre-bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--red);
+      transition: width 1.4s var(--ease);
+    }
 
-  /* ---------- SPONSORS MARQUEE ---------- */
-  .marquee-wrap{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:50px 0;overflow:hidden;}
-  .marquee{display:flex;gap:80px;width:max-content;animation:scroll-left 24s linear infinite;}
-  @keyframes scroll-left{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-  .marquee span{font-family:'Archivo';font-weight:800;font-size:26px;color:var(--off-dim);white-space:nowrap;letter-spacing:0.01em;}
-  .marquee span:hover{color:var(--red);}
-/* ---------- EVENTS ---------- */
-  .events-list {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line);
-    margin-top: 40px;
-  }
-  .event-item {
-    display: grid;
-    grid-template-columns: 140px 1fr auto;
-    gap: 40px;
-    align-items: center;
-    padding: 34px 0;
-    border-bottom: 1px solid var(--line);
-    transition: background 0.4s var(--ease), padding 0.4s var(--ease);
-  }
-  .event-item:hover {
-    background: var(--panel);
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .event-date {
-    font-family: 'Archivo';
-    font-weight: 900;
-    font-size: 28px;
-    color: var(--red);
-    line-height: 1;
-  }
-  .event-date span {
-    display: block;
-    font-family: 'Inter';
-    font-weight: 600;
-    font-size: 12px;
-    color: var(--off-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 6px;
-  }
-  .event-details h3 {
-    font-size: 24px;
-    color: var(--off);
-    margin-bottom: 8px;
-  }
-  .event-details p {
-    font-size: 14.5px;
-    color: var(--off-dim);
-    line-height: 1.5;
-  }
-  .event-action .btn {
-    padding: 12px 24px;
-    font-size: 12px;
-  }
+    .pre-label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--off-dim);
+      text-transform: uppercase;
+    }
 
-  @media (max-width: 768px) {
+    /* ---------- NAV ---------- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 40px;
+      mix-blend-mode: normal;
+      transition: background .4s var(--ease), padding .4s var(--ease), border-color .4s var(--ease);
+      border-bottom: 1px solid transparent;
+    }
+
+    header.scrolled {
+      background: rgba(10, 11, 13, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 14px 40px;
+      border-color: var(--line);
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    .logo span {
+      color: var(--red);
+    }
+
+    .logo small {
+      font-family: 'Inter';
+      font-weight: 500;
+      font-size: 11px;
+      color: var(--off-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: transform .2s var(--ease);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 12px;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-toggle-label {
+      font-size: 11px;
+      color: var(--off-dim);
+      display: none;
+    }
+
+    @media (max-width:768px) {
+      .theme-toggle-label {
+        display: inline;
+      }
+    }
+
+    nav ul {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    nav a {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      position: relative;
+      padding-bottom: 4px;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: var(--red);
+      transition: width .35s var(--ease);
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      border: 1px solid var(--line);
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all .3s var(--ease);
+    }
+
+    .nav-cta:hover {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .burger {
+      display: none;
+    }
+
+    /* ---------- INTRO VIDEO ---------- */
+    .intro-video {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+
+    .intro-video-frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .intro-video-frame video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      will-change: opacity;
+    }
+
+    .intro-video-spacer {
+      height: 100svh;
+      width: 100%;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 40px 60px;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 20%, rgba(232, 72, 44, 0.14), transparent 60%),
+        var(--black);
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 60px;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      font-size: 13px;
+      color: var(--sage);
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+
+    .dot-live {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--sage);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(48px, 7vw, 104px);
+      color: var(--off);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--red);
+    }
+
+    .heat-gif {
+      display: inline-block;
+      height: clamp(40px, 6vw, 84px);
+      width: auto;
+      vertical-align: middle;
+      image-rendering: auto;
+    }
+
+    .hero p {
+      max-width: 44ch;
+      margin-top: 24px;
+      color: var(--off-dim);
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 18px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 30px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--off);
+      transition: color .4s var(--ease), border-color .4s var(--ease);
+    }
+
+    .btn span {
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--off);
+      transform: translateY(101%);
+      transition: transform .4s var(--ease);
+      z-index: 1;
+    }
+
+    .btn.solid {
+      background: var(--off);
+      color: var(--black);
+    }
+
+    .btn.solid::before {
+      background: var(--red);
+    }
+
+    .btn.solid:hover {
+      color: var(--off);
+      border-color: var(--red);
+    }
+
+    .btn.ghost {
+      color: var(--off);
+    }
+
+    .btn.ghost:hover {
+      color: var(--black);
+    }
+
+    .btn.ghost:hover::before {
+      transform: translateY(0);
+    }
+
+    .btn.solid:hover::before {
+      transform: translateY(0);
+    }
+
+    /* ---------- 3D ROBOT CARD ---------- */
+    .card-stage {
+      perspective: 1400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .robo-card {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 3/4;
+      border: 1px solid var(--line);
+      background: linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+      transform-style: preserve-3d;
+      transition: transform .15s ease-out, box-shadow .3s ease;
+      will-change: transform;
+    }
+
+    .robo-card:hover {
+      box-shadow: 0 40px 80px -20px rgba(232, 72, 44, 0.35);
+    }
+
+    .robo-media {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
+    }
+
+    .robo-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: translateZ(0);
+      opacity: 0.9;
+    }
+
+    .robo-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    .robo-media::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10, 11, 13, 0) 45%, rgba(10, 11, 13, 0.95) 100%);
+      pointer-events: none;
+    }
+
+    .frame-axis {
+      position: absolute;
+      inset: 18px;
+      border: 1px dashed rgba(245, 243, 238, 0.08);
+      pointer-events: none;
+    }
+
+    .frame-axis::before,
+    .frame-axis::after {
+      content: '';
+      position: absolute;
+      background: rgba(245, 243, 238, 0.08);
+    }
+
+    .frame-axis::before {
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+    }
+
+    .frame-axis::after {
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+
+    .robo-glare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+      background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.35), transparent 55%);
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+
+    .robo-card:hover .robo-glare {
+      opacity: 1;
+    }
+
+    .robo-tag {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: var(--red);
+      color: var(--off);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      transform: translateZ(50px);
+    }
+
+    .robo-num {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--off-dim);
+      transform: translateZ(50px);
+    }
+
+    .robo-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 26px;
+      transform: translateZ(60px);
+    }
+
+    .robo-info h3 {
+      font-size: 30px;
+      color: var(--off);
+    }
+
+    .robo-info p {
+      font-size: 13px;
+      color: var(--off-dim);
+      margin-top: 6px;
+    }
+
+    .robo-stats {
+      display: flex;
+      gap: 18px;
+      margin-top: 16px;
+    }
+
+    .robo-stats div {
+      font-size: 11px;
+      color: var(--sage);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .robo-stats b {
+      display: block;
+      font-family: 'Archivo';
+      font-size: 18px;
+      color: var(--off);
+      font-weight: 800;
+    }
+
+    .card-caption {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--off-dim);
+      letter-spacing: 0.03em;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: var(--off-dim);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .scroll-cue .line {
+      width: 1px;
+      height: 36px;
+      background: var(--line);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-cue .line span {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--red);
+      animation: scrollline 1.8s infinite var(--ease);
+    }
+
+    @keyframes scrollline {
+      0% {
+        top: -100%;
+      }
+
+      50% {
+        top: 0;
+      }
+
+      100% {
+        top: 100%;
+      }
+    }
+
+    /* ---------- SECTION SHELL ---------- */
+    section {
+      position: relative;
+      padding: 140px 40px;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: end;
+      margin-bottom: 70px;
+    }
+
+    .section-head .label {
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .section-head h2 {
+      font-size: clamp(34px, 4.5vw, 56px);
+    }
+
+    .section-head p {
+      color: var(--off-dim);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 42ch;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1s var(--ease), transform 1s var(--ease);
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 1s var(--ease), transform 1.1s var(--ease);
+    }
+
+    .reveal-scale.in {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ---------- ABOUT / MISSION ---------- */
+    .mission {
+      background: var(--panel);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mission-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .mission-media {
+      position: relative;
+      aspect-ratio: 4/5;
+      overflow: hidden;
+      background: var(--graphite);
+    }
+
+    .mission-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mission-num {
+      position: absolute;
+      bottom: -30px;
+      right: -20px;
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 180px;
+      color: var(--black);
+      -webkit-text-stroke: 1px var(--line);
+      opacity: 0.6;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .mission-text h2 {
+      font-size: clamp(30px, 3.6vw, 44px);
+      margin-bottom: 24px;
+    }
+
+    .mission-text p {
+      color: var(--off-dim);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 18px;
+      max-width: 50ch;
+    }
+
+    .mission-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+      border-top: 1px solid var(--line);
+      padding-top: 28px;
+    }
+
+    .mission-stats div b {
+      font-family: 'Archivo';
+      font-size: 36px;
+      font-weight: 900;
+      display: block;
+      color: var(--off);
+    }
+
+    .mission-stats div span {
+      font-size: 12px;
+      color: var(--off-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ---------- SEASONS HORIZONTAL SCROLL ---------- */
+    .seasons-wrap {
+      overflow: hidden;
+    }
+
+    .seasons-track {
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 20px;
+      scrollbar-width: none;
+    }
+
+    .seasons-track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .season-card {
+      flex: 0 0 auto;
+      width: 340px;
+      scroll-snap-align: start;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      transition: transform .5s var(--ease), border-color .4s ease;
+    }
+
+    .season-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--red);
+    }
+
+    .season-media {
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .season-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .6s var(--ease);
+    }
+
+    .season-card:hover .season-media img {
+      transform: scale(1.08);
+    }
+
+    .season-cube-frame {
+      background: radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
+    }
+
+    .season-cube-frame .robo-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .season-year {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 13px;
+      background: var(--black);
+      padding: 5px 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .season-body {
+      padding: 22px;
+    }
+
+    .season-body .tag {
+      font-size: 11px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+
+    .season-body h3 {
+      font-size: 22px;
+      margin-top: 10px;
+    }
+
+    .season-body p {
+      font-size: 13.5px;
+      color: var(--off-dim);
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .drag-hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      color: var(--off-dim);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .drag-hint .arrow {
+      width: 40px;
+      height: 1px;
+      background: var(--off-dim);
+      position: relative;
+    }
+
+    .drag-hint .arrow::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -3px;
+      width: 7px;
+      height: 7px;
+      border-right: 1px solid var(--off-dim);
+      border-top: 1px solid var(--off-dim);
+      transform: rotate(45deg);
+    }
+
+    /* ---------- ROBOT DETAIL MODAL ---------- */
+    .season-card {
+      cursor: pointer;
+    }
+
+    .robo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s var(--ease);
+      padding: 32px;
+    }
+
+    .robo-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .robo-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 7, 6, 0.82);
+      backdrop-filter: blur(6px);
+    }
+
+    .robo-modal-window {
+      position: relative;
+      width: min(1100px, 100%);
+      max-height: min(780px, 92vh);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 60px 120px -30px rgba(0, 0, 0, 0.6);
+      transform: translateY(24px) scale(0.98);
+      transition: transform .4s var(--ease);
+      overflow: hidden;
+    }
+
+    .robo-modal.open .robo-modal-window {
+      transform: translateY(0) scale(1);
+    }
+
+    .robo-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 5;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--line);
+      background: var(--black);
+      color: var(--off);
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .3s ease, border-color .3s ease, transform .3s ease;
+    }
+
+    .robo-modal-close:hover {
+      background: var(--red);
+      border-color: var(--red);
+      transform: rotate(90deg);
+    }
+
+    .robo-modal-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      height: min(780px, 92vh);
+    }
+
+    .robo-modal-card {
+      position: relative;
+      border-right: 1px solid var(--line);
+      background: linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+      overflow-y: auto;
+    }
+
+    /* Reuse .robo-card look inside the modal, but let it fill the panel */
+    .robo-modal-card .robo-card {
+      position: relative;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 3/4;
+      max-width: none;
+      border: none;
+    }
+
+    .robo-modal-media {
+      position: relative;
+      overflow: hidden;
+      background: var(--black);
+    }
+
+    .robo-modal-media-viewport {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .robo-modal-media-track {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 2px;
+      will-change: transform;
+      backface-visibility: hidden;
+      transform: translateZ(0);
+    }
+
+    .robo-modal-track-anim {
+      animation: roboModalScroll var(--scroll-duration, 22s) linear infinite;
+    }
+
+    .robo-modal-track-anim:hover {
+      animation-play-state: paused;
+    }
+
+    .robo-tile {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      min-height: 120px;
+      /* Prevents 0-height collapse while loading */
+      overflow: hidden;
+      background: var(--graphite);
+    }
+
+    @keyframes roboModalScroll {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(calc(-1 * var(--scroll-distance, 0px)));
+      }
+    }
+
+    .robo-tile img,
+    .robo-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .robo-tile .robo-tile-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .robo-tile .robo-tile-play::before {
+      content: '';
+      width: 0;
+      height: 0;
+      border-top: 9px solid transparent;
+      border-bottom: 9px solid transparent;
+      border-left: 14px solid rgba(245, 243, 238, 0.9);
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+    }
+
+    .robo-modal-empty {
+      grid-column: 1/-1;
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--off-dim);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width:860px) {
+      .robo-tile-set {
+        columns: 2;
+      }
+    }
+
+    /* ---------- TEAM ---------- */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+
+    .team-item {
+      background: var(--black);
+      padding: 34px 26px;
+      position: relative;
+      overflow: hidden;
+      transition: background .4s ease;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .team-item::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--panel);
+      opacity: 0;
+      transform: scale(1.1);
+      transition: opacity .4s ease, transform .5s var(--ease);
+    }
+
+    .team-item:hover::before {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .team-role {
+      position: relative;
+      font-size: 11px;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .team-name {
+      position: relative;
+      font-family: 'Archivo';
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .team-sub {
+      position: relative;
+      font-size: 12.5px;
+      color: var(--off-dim);
+      margin-top: 8px;
+    }
+
+    .team-avatar {
+      position: relative;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--graphite);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Archivo';
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 20px;
+      border: 1px solid var(--line);
+    }
+
+    /* ---------- SPONSORS MARQUEE ---------- */
+    .marquee-wrap {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 50px 0;
+      overflow: hidden;
+    }
+
+    .marquee {
+      display: flex;
+      gap: 80px;
+      width: max-content;
+      animation: scroll-left 24s linear infinite;
+    }
+
+    @keyframes scroll-left {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    .marquee span {
+      font-family: 'Archivo';
+      font-weight: 800;
+      font-size: 26px;
+      color: var(--off-dim);
+      white-space: nowrap;
+      letter-spacing: 0.01em;
+    }
+
+    .marquee span:hover {
+      color: var(--red);
+    }
+
+    /* ---------- EVENTS ---------- */
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--line);
+      margin-top: 40px;
+    }
+
     .event-item {
-      grid-template-columns: 1fr;
-      gap: 16px;
-      padding: 24px 0;
-      align-items: start;
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      gap: 40px;
+      align-items: center;
+      padding: 34px 0;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.4s var(--ease), padding 0.4s var(--ease);
     }
+
     .event-item:hover {
-      padding-left: 10px;
-      padding-right: 10px;
+      background: var(--panel);
+      padding-left: 20px;
+      padding-right: 20px;
     }
-  }
-  /* ---------- GALLERY / MEDIA ---------- */
-  .gallery-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:180px;gap:14px;}
-  .gallery-item{position:relative;overflow:hidden;background:var(--graphite);}
-  .gallery-item img{width:100%;height:100%;object-fit:cover;transition:transform .7s var(--ease);}
-  .gallery-item:hover img{transform:scale(1.12) rotate(1deg);}
-  .g1{grid-column:span 3;grid-row:span 2;}
-  .g2{grid-column:span 3;grid-row:span 1;}
-  .g3{grid-column:span 2;grid-row:span 1;}
-  .g4{grid-column:span 2;grid-row:span 2;}
-  .g5{grid-column:span 2;grid-row:span 1;}
-  .gallery-overlay{
-    position:absolute;inset:0;display:flex;align-items:flex-end;padding:18px;
-    background:linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.85));
-    opacity:0;transition:opacity .35s ease;
-  }
-  .gallery-item:hover .gallery-overlay{opacity:1;}
-  .gallery-overlay span{font-size:12px;font-weight:600;letter-spacing:0.03em;}
 
-  /* ---------- CTA / CONTACT ---------- */
-  .cta-section{
-    background:var(--red);color:var(--black);text-align:center;position:relative;overflow:hidden;
-  }
-  .cta-section h2{font-size:clamp(40px,8vw,120px);color:var(--black);}
-  .cta-section p{margin:20px auto 40px;color:rgba(10,11,13,0.75);font-size:17px;max-width:50ch;}
-  .cta-section .btn{border-color:var(--black);}
-  .cta-section .btn.solid{background:var(--black);color:var(--off);}
-  .cta-section .btn.solid::before{background:var(--off);}
-  .cta-section .btn.solid:hover{color:var(--black);}
+    .event-date {
+      font-family: 'Archivo';
+      font-weight: 900;
+      font-size: 28px;
+      color: var(--red);
+      line-height: 1;
+    }
 
-  footer{padding:70px 40px 30px;}
-  .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding-bottom:60px;border-bottom:1px solid var(--line);}
-  .footer-brand .logo{font-size:26px;margin-bottom:16px;}
-  .footer-brand p{color:var(--off-dim);font-size:14px;max-width:32ch;line-height:1.6;}
-  .footer-col h4{font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--off-dim);margin-bottom:18px;}
-  .footer-col a{display:block;font-size:14px;margin-bottom:12px;color:var(--off);transition:color .3s ease;}
-  .footer-col a:hover{color:var(--red);}
-  .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:26px;color:var(--off-dim);font-size:12.5px;flex-wrap:wrap;gap:12px;}
+    .event-date span {
+      display: block;
+      font-family: 'Inter';
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--off-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 6px;
+    }
 
-  @media (max-width:980px){
-    nav, .nav-cta{display:none;}
-    .burger{display:flex;flex-direction:column;gap:5px;cursor:pointer;}
-    .burger span{width:24px;height:2px;background:var(--off);}
-    .hero-grid, .mission-grid{grid-template-columns:1fr;}
-    .mission-grid{gap:50px;}
-    .section-head{grid-template-columns:1fr;}
-    .team-grid{grid-template-columns:repeat(2,1fr);}
-    .gallery-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:140px;}
-    .g1,.g2,.g3,.g4,.g5{grid-column:span 2;grid-row:span 1;}
-    .footer-grid{grid-template-columns:1fr 1fr;gap:36px;}
-    section{padding:90px 24px;}
-    header{padding:18px 24px;}
-  }
-</style>
-<link rel="stylesheet" href="chat-widget.css">
+    .event-details h3 {
+      font-size: 24px;
+      color: var(--off);
+      margin-bottom: 8px;
+    }
+
+    .event-details p {
+      font-size: 14.5px;
+      color: var(--off-dim);
+      line-height: 1.5;
+    }
+
+    .event-action .btn {
+      padding: 12px 24px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .event-item {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 24px 0;
+        align-items: start;
+      }
+
+      .event-item:hover {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    /* ---------- GALLERY / MEDIA ---------- */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 180px;
+      gap: 14px;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      background: var(--graphite);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .7s var(--ease);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.12) rotate(1deg);
+    }
+
+    .g1 {
+      grid-column: span 3;
+      grid-row: span 2;
+    }
+
+    .g2 {
+      grid-column: span 3;
+      grid-row: span 1;
+    }
+
+    .g3 {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+
+    .g4 {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .g5 {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 18px;
+      background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.85));
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+
+    .gallery-item:hover .gallery-overlay {
+      opacity: 1;
+    }
+
+    .gallery-overlay span {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    /* ---------- CTA / CONTACT ---------- */
+    .cta-section {
+      background: var(--red);
+      color: var(--black);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(40px, 8vw, 120px);
+      color: var(--black);
+    }
+
+    .cta-section p {
+      margin: 20px auto 40px;
+      color: rgba(10, 11, 13, 0.75);
+      font-size: 17px;
+      max-width: 50ch;
+    }
+
+    .cta-section .btn {
+      border-color: var(--black);
+    }
+
+    .cta-section .btn.solid {
+      background: var(--black);
+      color: var(--off);
+    }
+
+    .cta-section .btn.solid::before {
+      background: var(--off);
+    }
+
+    .cta-section .btn.solid:hover {
+      color: var(--black);
+    }
+
+    footer {
+      padding: 70px 40px 30px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 60px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .footer-brand .logo {
+      font-size: 26px;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand p {
+      color: var(--off-dim);
+      font-size: 14px;
+      max-width: 32ch;
+      line-height: 1.6;
+    }
+
+    .footer-col h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--off-dim);
+      margin-bottom: 18px;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: var(--off);
+      transition: color .3s ease;
+    }
+
+    .footer-col a:hover {
+      color: var(--red);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 26px;
+      color: var(--off-dim);
+      font-size: 12.5px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    @media (max-width:980px) {
+
+      nav,
+      .nav-cta {
+        display: none;
+      }
+
+      .burger {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        cursor: pointer;
+      }
+
+      .burger span {
+        width: 24px;
+        height: 2px;
+        background: var(--off);
+      }
+
+      .hero-grid,
+      .mission-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mission-grid {
+        gap: 50px;
+      }
+
+      .section-head {
+        grid-template-columns: 1fr;
+      }
+
+      .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 140px;
+      }
+
+      .g1,
+      .g2,
+      .g3,
+      .g4,
+      .g5 {
+        grid-column: span 2;
+        grid-row: span 1;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 36px;
+      }
+
+      section {
+        padding: 90px 24px;
+      }
+
+      header {
+        padding: 18px 24px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="chat-widget.css">
 </head>
+
 <body>
 
-<div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
 
-<div id="preloader">
-  <div class="pre-num" id="preNum">00</div>
-  <div class="pre-bar"><span id="preBarFill"></span></div>
-  <div class="pre-label">Peppers Robotics — Loading Systems</div>
-</div>
-
-<header id="siteHeader">
-  <div class="logo">PEPPERS<span>#19044 v12</span> <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">🌶️</button></div>
-  <nav>
-    <ul>
-      <li><a href="#about">Team</a></li>
-      <li><a href="#seasons">Seasons</a></li>
-      <li><a href="#sponsors">Sponsors</a></li>
-      <li><a href="#events">Events</a></li> <!-- NEW LINK -->
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
-  <a href="#contact" class="nav-cta">Sponsor Us</a>
-  <div class="burger"><span></span><span></span><span></span></div>
-</header>
-
-<!-- INTRO VIDEO -->
-<div class="intro-video" id="introVideo">
-  <div class="intro-video-frame" id="introVideoFrame">
-    <video id="introVideoEl" autoplay muted loop playsinline>
-      <source src="intro-video.mp4" type="video/mp4">
-    </video>
+  <div id="preloader">
+    <div class="pre-num" id="preNum">00</div>
+    <div class="pre-bar"><span id="preBarFill"></span></div>
+    <div class="pre-label">Peppers Robotics — Loading Systems</div>
   </div>
-</div>
-<div class="intro-video-spacer"></div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-grid">
-    <div>
-      <div class="hero-eyebrow"><span class="dot-live"></span> FTC Team 19044 · Iași, Romania</div>
-      <h1>We build<br>robots that<br><em>bring the</em> <img class="heat-gif" src="heat-gif.gif" alt="heat">
-      <p>Peppers Robotics is a FIRST Tech Challenge team engineering, coding and competing at the highest level — one season, one robot, one relentless team at a time.</p>
-      <div class="hero-actions">
-        <a href="#seasons" class="btn solid"><span>See Our Robots</span></a>
-        <a href="#contact" class="btn ghost"><span>Become a Sponsor</span></a>
+  <header id="siteHeader">
+    <div class="logo">PEPPERS<span>#19044 v13</span> <button id="themeToggle" class="theme-toggle"
+        title="Toggle dark/light mode">🌶️</button></div>
+    <nav>
+      <ul>
+        <li><a href="#about">Team</a></li>
+        <li><a href="#seasons">Seasons</a></li>
+        <li><a href="#sponsors">Sponsors</a></li>
+        <li><a href="#events">Events</a></li> <!-- NEW LINK -->
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <a href="#contact" class="nav-cta">Sponsor Us</a>
+    <div class="burger"><span></span><span></span><span></span></div>
+  </header>
+
+  <!-- INTRO VIDEO -->
+  <div class="intro-video" id="introVideo">
+    <div class="intro-video-frame" id="introVideoFrame">
+      <video id="introVideoEl" autoplay muted loop playsinline>
+        <source src="intro-video.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+  <div class="intro-video-spacer"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-eyebrow"><span class="dot-live"></span> FTC Team 19044 · Iași, Romania</div>
+        <h1>We build<br>robots that<br><em>bring the</em> <img class="heat-gif" src="heat-gif.gif" alt="heat">
+          <p>Peppers Robotics is a FIRST Tech Challenge team engineering, coding and competing at the highest level —
+            one season, one robot, one relentless team at a time.</p>
+          <div class="hero-actions">
+            <a href="#seasons" class="btn solid"><span>See Our Robots</span></a>
+            <a href="#contact" class="btn ghost"><span>Become a Sponsor</span></a>
+          </div>
+      </div>
+      <div class="card-stage">
+        <div>
+          <div class="robo-card" id="roboCard">
+            <div class="robo-media">
+              <canvas class="robo-canvas" data-robo-cube></canvas>
+              <div class="frame-axis"></div>
+            </div>
+            <div class="robo-glare" id="roboGlare"></div>
+            <div class="robo-tag">Active Build</div>
+            <div class="robo-num">RX-04</div>
+            <div class="robo-info">
+              <h3>"________"</h3>
+              <p>2025–26 competition robot · STL preview, live orientation</p>
+              <div class="robo-stats">
+                <div><b>4</b>Motors</div>
+                <div><b>18"</b>Height</div>
+                <div><b>3s</b>Cycle</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-caption">Move your cursor over the frame — the model orients to it</div>
+        </div>
       </div>
     </div>
-    <div class="card-stage">
-      <div>
-        <div class="robo-card" id="roboCard">
-          <div class="robo-media">
+    <div class="scroll-cue"><span>Scroll</span>
+      <div class="line"><span></span></div>
+    </div>
+  </section>
+
+  <!-- MISSION / ABOUT -->
+  <section class="mission" id="about">
+    <div class="wrap mission-grid">
+      <div class="reveal-scale" style="position:relative;">
+        <div class="mission-media">
+          <img src="https://picsum.photos/id/1015/800/1000" alt="Team placeholder photo">
+        </div>
+        <div class="mission-num">19</div>
+      </div>
+      <div class="reveal mission-text">
+        <span class="hero-eyebrow" style="margin-bottom:14px;"><span class="dot-live"></span>Who we are</span>
+        <h2>OUR MISSION</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+          consequat.</p>
+        <p>We're built on the idea that robotics is a team sport: mechanical, electrical, software and outreach working
+          the same problem from every angle, under the same deadline.</p>
+        <div class="mission-stats">
+          <div><b>19044</b><span>Team Number</span></div>
+          <div><b>X</b><span>Seasons Competed</span></div>
+          <div><b>x</b><span>Team Members</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEASONS HORIZONTAL SCROLL -->
+  <section id="seasons">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <span class="label">Season Archive</span>
+          <h2>Every robot tells a season's story.</h2>
+        </div>
+        <p>From our rookie season to this year's build — drag or scroll sideways to explore what we've shipped to
+          competition.</p>
+      </div>
+    </div>
+    <div class="wrap seasons-wrap">
+      <div class="seasons-track" id="seasonsTrack">
+        <div class="season-card" data-season-id="kickathon">
+          <div class="season-media">
+            <!--<img src="2026-2027/V1.jpeg " alt="Kickathon robot placeholder photo">-->
             <canvas class="robo-canvas" data-robo-cube></canvas>
-            <div class="frame-axis"></div>
+            <div class="season-year">2026–27</div>
           </div>
-          <div class="robo-glare" id="roboGlare"></div>
-          <div class="robo-tag">Active Build</div>
-          <div class="robo-num">RX-04</div>
-          <div class="robo-info">
+          <div class="season-body">
+            <span class="tag">Kickathon</span>
+            <h3>Kickathon Robot</h3>
+            <p>Our Kickathon build — a fast, early-season prototype put together in the first days after kickoff.</p>
+          </div>
+        </div>
+        <div class="season-card" data-season-id="2025-26">
+          <div class="season-media season-cube-frame">
+            <canvas class="robo-canvas" data-robo-cube></canvas>
+            <div class="season-year">2025–26</div>
+          </div>
+          <div class="season-body">
+            <span class="tag">Current Season</span>
             <h3>"________"</h3>
-            <p>2025–26 competition robot · STL preview, live orientation</p>
-            <div class="robo-stats">
-              <div><b>4</b>Motors</div>
-              <div><b>18"</b>Height</div>
-              <div><b>3s</b>Cycle</div>
+            <p>Our current competition robot — modular intake, high-speed scoring arm, and a drivetrain tuned for tight
+              field control.</p>
+          </div>
+        </div>
+        <div class="season-card" data-season-id="2024-25">
+          <div class="season-media season-cube-frame">
+            <canvas class="robo-canvas" data-robo-cube></canvas>
+            <div class="season-year">2024–25</div>
+          </div>
+          <div class="season-body">
+            <span class="tag">Regional Finalist</span>
+            <h3>"________"</h3>
+            <p>Our third-season bot — first robot with a full swerve drivetrain and autonomous scoring routine.</p>
+          </div>
+        </div>
+        <div class="season-card" data-season-id="2023-24">
+          <div class="season-media season-cube-frame">
+            <canvas class="robo-canvas" data-robo-cube></canvas>
+            <div class="season-year">2023–24</div>
+          </div>
+          <div class="season-body">
+            <span class="tag">Design Award</span>
+            <h3>"________"</h3>
+            <p>A total rebuild focused on manufacturability — recognized for clean CAD and documentation.</p>
+          </div>
+        </div>
+        <div class="season-card" data-season-id="2022-23">
+          <div class="season-media season-cube-frame">
+            <canvas class="robo-canvas" data-robo-cube></canvas>
+            <div class="season-year">2022–23</div>
+          </div>
+          <div class="season-body">
+            <span class="tag">Rookie Season</span>
+            <h3>"________"</h3>
+            <p>Where it all started. Built from scratch by 6 rookies with zero prior robotics experience.</p>
+          </div>
+        </div>
+        <div class="season-card" data-season-id="coming-soon">
+          <div class="season-media">
+            <img src="https://picsum.photos/id/1025/700/440" alt="Next season concept placeholder photo">
+            <div class="season-year">2026–27</div>
+          </div>
+          <div class="season-body">
+            <span class="tag">In Development</span>
+            <h3>Coming Soon</h3>
+            <p>Early CAD concepts are already underway for next season's game. Follow along as we build.</p>
+          </div>
+        </div>
+      </div>
+      <div class="drag-hint">
+        <div class="arrow"></div> Drag to explore
+      </div>
+    </div>
+  </section>
+
+  <!-- ROBOT DETAIL MODAL -->
+  <div class="robo-modal" id="roboModal" aria-hidden="true">
+    <div class="robo-modal-backdrop" data-modal-close></div>
+    <div class="robo-modal-window" role="dialog" aria-modal="true" aria-labelledby="roboModalTitle">
+      <button class="robo-modal-close" data-modal-close aria-label="Close">✕</button>
+      <div class="robo-modal-grid">
+        <div class="robo-modal-card" id="roboModalCard">
+          <!-- populated by JS: a copy of the season's card -->
+        </div>
+        <div class="robo-modal-media">
+          <div class="robo-modal-media-viewport">
+            <div class="robo-modal-media-track" id="roboModalTrack">
+              <!-- populated by JS: 3-column tiled photos/videos -->
             </div>
           </div>
         </div>
-        <div class="card-caption">Move your cursor over the frame — the model orients to it</div>
       </div>
     </div>
   </div>
-  <div class="scroll-cue"><span>Scroll</span><div class="line"><span></span></div></div>
-</section>
 
-<!-- MISSION / ABOUT -->
-<section class="mission" id="about">
-  <div class="wrap mission-grid">
-    <div class="reveal-scale" style="position:relative;">
-      <div class="mission-media">
-        <img src="https://picsum.photos/id/1015/800/1000" alt="Team placeholder photo">
-      </div>
-      <div class="mission-num">19</div>
-    </div>
-    <div class="reveal mission-text">
-      <span class="hero-eyebrow" style="margin-bottom:14px;"><span class="dot-live"></span>Who we are</span>
-      <h2>OUR MISSION</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-      <p>We're built on the idea that robotics is a team sport: mechanical, electrical, software and outreach working the same problem from every angle, under the same deadline.</p>
-      <div class="mission-stats">
-        <div><b>19044</b><span>Team Number</span></div>
-        <div><b>X</b><span>Seasons Competed</span></div>
-        <div><b>x</b><span>Team Members</span></div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- SEASONS HORIZONTAL SCROLL -->
-<section id="seasons">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <span class="label">Season Archive</span>
-        <h2>Every robot tells a season's story.</h2>
-      </div>
-      <p>From our rookie season to this year's build — drag or scroll sideways to explore what we've shipped to competition.</p>
-    </div>
-  </div>
-  <div class="wrap seasons-wrap">
-    <div class="seasons-track" id="seasonsTrack">
-      <div class="season-card" data-season-id="2025-26">
-        <div class="season-media season-cube-frame">
-          <canvas class="robo-canvas" data-robo-cube></canvas>
-          <div class="season-year">2025–26</div>
+  <!-- SPONSORS MARQUEE -->
+  <section id="sponsors" style="padding:0;">
+    <div class="wrap" style="padding:100px 40px 50px;">
+      <div class="section-head reveal" style="margin-bottom:20px;">
+        <div>
+          <span class="label">Backed By</span>
+          <h2>Our sponsors make this possible.</h2>
         </div>
-        <div class="season-body">
-          <span class="tag">Current Season</span>
-          <h3>"________"</h3>
-          <p>Our current competition robot — modular intake, high-speed scoring arm, and a drivetrain tuned for tight field control.</p>
-        </div>
-      </div>
-      <div class="season-card" data-season-id="2024-25">
-        <div class="season-media season-cube-frame">
-          <canvas class="robo-canvas" data-robo-cube></canvas>
-          <div class="season-year">2024–25</div>
-        </div>
-        <div class="season-body">
-          <span class="tag">Regional Finalist</span>
-          <h3>"________"</h3>
-          <p>Our third-season bot — first robot with a full swerve drivetrain and autonomous scoring routine.</p>
-        </div>
-      </div>
-      <div class="season-card" data-season-id="2023-24">
-        <div class="season-media season-cube-frame">
-          <canvas class="robo-canvas" data-robo-cube></canvas>
-          <div class="season-year">2023–24</div>
-        </div>
-        <div class="season-body">
-          <span class="tag">Design Award</span>
-          <h3>"________"</h3>
-          <p>A total rebuild focused on manufacturability — recognized for clean CAD and documentation.</p>
-        </div>
-      </div>
-      <div class="season-card" data-season-id="2022-23">
-        <div class="season-media season-cube-frame">
-          <canvas class="robo-canvas" data-robo-cube></canvas>
-          <div class="season-year">2022–23</div>
-        </div>
-        <div class="season-body">
-          <span class="tag">Rookie Season</span>
-          <h3>"________"</h3>
-          <p>Where it all started. Built from scratch by 6 rookies with zero prior robotics experience.</p>
-        </div>
-      </div>
-      <div class="season-card" data-season-id="kickathon">
-        <div class="season-media">
-          <img src="2026-2027/V1.jpeg " alt="Kickathon robot placeholder photo">
-          <div class="season-year">2026–27</div>
-        </div>
-        <div class="season-body">
-          <span class="tag">Kickathon</span>
-          <h3>Kickathon Robot</h3>
-          <p>Our Kickathon build — a fast, early-season prototype put together in the first days after kickoff.</p>
-        </div>
-      </div>
-      <div class="season-card" data-season-id="coming-soon">
-        <div class="season-media">
-          <img src="https://picsum.photos/id/1025/700/440" alt="Next season concept placeholder photo">
-          <div class="season-year">2026–27</div>
-        </div>
-        <div class="season-body">
-          <span class="tag">In Development</span>
-          <h3>Coming Soon</h3>
-          <p>Early CAD concepts are already underway for next season's game. Follow along as we build.</p>
-        </div>
+        <p>Placeholder sponsor wordmarks below — swap in real logos when the deck is final.</p>
       </div>
     </div>
-    <div class="drag-hint"><div class="arrow"></div> Drag to explore</div>
-  </div>
-</section>
+    <div class="marquee-wrap">
+      <div class="marquee">
+        <span>SPONSOR ONE</span><span>SPONSOR TWO</span><span>LOCAL FOUNDRY CO</span><span>SPONSOR FOUR</span><span>TECH
+          PARTNER</span><span>SPONSOR SIX</span>
+        <span>SPONSOR ONE</span><span>SPONSOR TWO</span><span>LOCAL FOUNDRY CO</span><span>SPONSOR FOUR</span><span>TECH
+          PARTNER</span><span>SPONSOR SIX</span>
+      </div>
+    </div>
+  </section>
+  <!-- EVENTS -->
+  <section id="events">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <span class="label">Schedule</span>
+          <h2>Upcoming Events.</h2>
+        </div>
+        <p>Catch us on the field, at community outreaches, or drop by our open shop days to see the build in progress.
+        </p>
+      </div>
 
-<!-- ROBOT DETAIL MODAL -->
-<div class="robo-modal" id="roboModal" aria-hidden="true">
-  <div class="robo-modal-backdrop" data-modal-close></div>
-  <div class="robo-modal-window" role="dialog" aria-modal="true" aria-labelledby="roboModalTitle">
-    <button class="robo-modal-close" data-modal-close aria-label="Close">✕</button>
-    <div class="robo-modal-grid">
-      <div class="robo-modal-card" id="roboModalCard">
-        <!-- populated by JS: a copy of the season's card -->
-      </div>
-      <div class="robo-modal-media">
-        <div class="robo-modal-media-viewport">
-          <div class="robo-modal-media-track" id="roboModalTrack">
-            <!-- populated by JS: 3-column tiled photos/videos -->
+      <div class="events-list reveal">
+        <div class="event-item">
+          <div class="event-date">NOV 14<span>2026</span></div>
+          <div class="event-details">
+            <h3>Regional Scrimmage #1</h3>
+            <p>Iași High School of Computer Science · 09:00 AM - 05:00 PM</p>
+          </div>
+          <div class="event-action">
+            <a href="#" class="btn ghost"><span>Details</span></a>
+          </div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-date">DEC 05<span>2026</span></div>
+          <div class="event-details">
+            <h3>Community Open Shop</h3>
+            <p>Peppers Robotics HQ · 10:00 AM - 02:00 PM</p>
+          </div>
+          <div class="event-action">
+            <a href="#" class="btn ghost"><span>RSVP</span></a>
+          </div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-date">JAN 22<span>2027</span></div>
+          <div class="event-details">
+            <h3>National Qualifier Tournament</h3>
+            <p>Bucharest Polyvalenta Hall · All Day Event</p>
+          </div>
+          <div class="event-action">
+            <a href="#" class="btn solid"><span>Live Stream</span></a>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-
-<!-- SPONSORS MARQUEE -->
-<section id="sponsors" style="padding:0;">
-  <div class="wrap" style="padding:100px 40px 50px;">
-    <div class="section-head reveal" style="margin-bottom:20px;">
-      <div>
-        <span class="label">Backed By</span>
-        <h2>Our sponsors make this possible.</h2>
+  </section>
+  <!-- GALLERY -->
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <span class="label">Moments</span>
+          <h2>Build nights & competition days.</h2>
+        </div>
+        <p>A look inside the shop and on the field — placeholder imagery for now.</p>
       </div>
-      <p>Placeholder sponsor wordmarks below — swap in real logos when the deck is final.</p>
-    </div>
-  </div>
-  <div class="marquee-wrap">
-    <div class="marquee">
-      <span>SPONSOR ONE</span><span>SPONSOR TWO</span><span>LOCAL FOUNDRY CO</span><span>SPONSOR FOUR</span><span>TECH PARTNER</span><span>SPONSOR SIX</span>
-      <span>SPONSOR ONE</span><span>SPONSOR TWO</span><span>LOCAL FOUNDRY CO</span><span>SPONSOR FOUR</span><span>TECH PARTNER</span><span>SPONSOR SIX</span>
-    </div>
-  </div>
-</section>
-<!-- EVENTS -->
-<section id="events">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <span class="label">Schedule</span>
-        <h2>Upcoming Events.</h2>
-      </div>
-      <p>Catch us on the field, at community outreaches, or drop by our open shop days to see the build in progress.</p>
-    </div>
-    
-    <div class="events-list reveal">
-      <div class="event-item">
-        <div class="event-date">NOV 14<span>2026</span></div>
-        <div class="event-details">
-          <h3>Regional Scrimmage #1</h3>
-          <p>Iași High School of Computer Science · 09:00 AM - 05:00 PM</p>
+      <div class="gallery-grid reveal">
+        <div class="gallery-item g1"><img src="https://picsum.photos/id/1035/700/900"
+            alt="Build night placeholder photo">
+          <div class="gallery-overlay"><span>Late build night, Feb 2026</span></div>
         </div>
-        <div class="event-action">
-          <a href="#" class="btn ghost"><span>Details</span></a>
+        <div class="gallery-item g2"><img src="https://picsum.photos/id/1043/700/400"
+            alt="Qualifier match placeholder photo">
+          <div class="gallery-overlay"><span>Regional qualifier</span></div>
         </div>
-      </div>
-      
-      <div class="event-item">
-        <div class="event-date">DEC 05<span>2026</span></div>
-        <div class="event-details">
-          <h3>Community Open Shop</h3>
-          <p>Peppers Robotics HQ · 10:00 AM - 02:00 PM</p>
+        <div class="gallery-item g3"><img src="https://picsum.photos/id/1050/500/400"
+            alt="Electrical bay placeholder photo">
+          <div class="gallery-overlay"><span>Electrical bay</span></div>
         </div>
-        <div class="event-action">
-          <a href="#" class="btn ghost"><span>RSVP</span></a>
+        <div class="gallery-item g4"><img src="https://picsum.photos/id/1062/500/900" alt="Pit crew placeholder photo">
+          <div class="gallery-overlay"><span>Pit crew, finals day</span></div>
         </div>
-      </div>
-      
-      <div class="event-item">
-        <div class="event-date">JAN 22<span>2027</span></div>
-        <div class="event-details">
-          <h3>National Qualifier Tournament</h3>
-          <p>Bucharest Polyvalenta Hall · All Day Event</p>
-        </div>
-        <div class="event-action">
-          <a href="#" class="btn solid"><span>Live Stream</span></a>
+        <div class="gallery-item g5"><img src="https://picsum.photos/id/1074/500/400"
+            alt="CAD session placeholder photo">
+          <div class="gallery-overlay"><span>CAD review</span></div>
         </div>
       </div>
     </div>
-  </div>
-</section>
-<!-- GALLERY -->
-<section id="gallery">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <div>
-        <span class="label">Moments</span>
-        <h2>Build nights & competition days.</h2>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="contact">
+    <div class="wrap reveal-scale">
+      <h2>Fuel our<br>next season.</h2>
+      <p>Whether it's funding, mentorship or shop space — every bit of support goes straight into the robot.</p>
+      <a href="mailto:team19044@peppersrobotics.example" class="btn solid"><span>Get In Touch</span></a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <div class="logo">PEPPERS<span>#19044</span></div>
+        <p>FIRST Tech Challenge team 19044, based in Iași, Romania. Built by students, powered by curiosity.</p>
       </div>
-      <p>A look inside the shop and on the field — placeholder imagery for now.</p>
+      <div class="footer-col">
+        <h4>Site</h4>
+        <a href="#about">Team</a>
+        <a href="#seasons">Seasons</a>
+        <a href="#events">Events</a> <!-- NEW LINK -->
+        <a href="#gallery">Gallery</a>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <a href="#">Instagram</a>
+        <a href="#">YouTube</a>
+        <a href="#">GitHub</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="mailto:team19044@peppersrobotics.example">team19044@peppersrobotics.example</a>
+        <a href="#">Iași, Romania</a>
+      </div>
     </div>
-    <div class="gallery-grid reveal">
-      <div class="gallery-item g1"><img src="https://picsum.photos/id/1035/700/900" alt="Build night placeholder photo"><div class="gallery-overlay"><span>Late build night, Feb 2026</span></div></div>
-      <div class="gallery-item g2"><img src="https://picsum.photos/id/1043/700/400" alt="Qualifier match placeholder photo"><div class="gallery-overlay"><span>Regional qualifier</span></div></div>
-      <div class="gallery-item g3"><img src="https://picsum.photos/id/1050/500/400" alt="Electrical bay placeholder photo"><div class="gallery-overlay"><span>Electrical bay</span></div></div>
-      <div class="gallery-item g4"><img src="https://picsum.photos/id/1062/500/900" alt="Pit crew placeholder photo"><div class="gallery-overlay"><span>Pit crew, finals day</span></div></div>
-      <div class="gallery-item g5"><img src="https://picsum.photos/id/1074/500/400" alt="CAD session placeholder photo"><div class="gallery-overlay"><span>CAD review</span></div></div>
+    <div class="wrap footer-bottom">
+      <span>© 2026 Peppers Robotics · FTC Team 19044</span>
+      <span>Prototype build — placeholder content & images</span>
     </div>
-  </div>
-</section>
+  </footer>
 
-<!-- CTA -->
-<section class="cta-section" id="contact">
-  <div class="wrap reveal-scale">
-    <h2>Fuel our<br>next season.</h2>
-    <p>Whether it's funding, mentorship or shop space — every bit of support goes straight into the robot.</p>
-    <a href="mailto:team19044@peppersrobotics.example" class="btn solid"><span>Get In Touch</span></a>
-  </div>
-</section>
+  <script>
+    // ---------- Preloader ----------
+    window.addEventListener('load', () => {
+      const num = document.getElementById('preNum');
+      const bar = document.getElementById('preBarFill');
+      let val = 0;
+      bar.style.width = '100%';
+      const interval = setInterval(() => {
+        val += Math.ceil(Math.random() * 18);
+        if (val >= 100) { val = 100; clearInterval(interval); }
+        num.textContent = String(val).padStart(2, '0');
+      }, 90);
+      setTimeout(() => {
+        document.getElementById('preloader').classList.add('done');
+      }, 1300);
+    });
 
-<footer>
-  <div class="wrap footer-grid">
-    <div class="footer-brand">
-      <div class="logo">PEPPERS<span>#19044</span></div>
-      <p>FIRST Tech Challenge team 19044, based in Iași, Romania. Built by students, powered by curiosity.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Site</h4>
-      <a href="#about">Team</a>
-      <a href="#seasons">Seasons</a>
-      <a href="#events">Events</a> <!-- NEW LINK -->
-      <a href="#gallery">Gallery</a>
-    </div>
-    <div class="footer-col">
-      <h4>Connect</h4>
-      <a href="#">Instagram</a>
-      <a href="#">YouTube</a>
-      <a href="#">GitHub</a>
-    </div>
-    <div class="footer-col">
-      <h4>Contact</h4>
-      <a href="mailto:team19044@peppersrobotics.example">team19044@peppersrobotics.example</a>
-      <a href="#">Iași, Romania</a>
-    </div>
-  </div>
-  <div class="wrap footer-bottom">
-    <span>© 2026 Peppers Robotics · FTC Team 19044</span>
-    <span>Prototype build — placeholder content & images</span>
-  </div>
-</footer>
+    // ---------- Custom cursor ----------
+    const cursorDot = document.getElementById('cursorDot');
+    window.addEventListener('mousemove', (e) => {
+      cursorDot.style.left = e.clientX + 'px';
+      cursorDot.style.top = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, .season-card, .team-item, .gallery-item, .robo-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursorDot.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursorDot.classList.remove('big'));
+    });
 
-<script>
-  // ---------- Preloader ----------
-  window.addEventListener('load', () => {
-    const num = document.getElementById('preNum');
-    const bar = document.getElementById('preBarFill');
-    let val = 0;
-    bar.style.width = '100%';
-    const interval = setInterval(() => {
-      val += Math.ceil(Math.random()*18);
-      if(val >= 100){ val = 100; clearInterval(interval); }
-      num.textContent = String(val).padStart(2,'0');
-    }, 90);
-    setTimeout(() => {
-      document.getElementById('preloader').classList.add('done');
-    }, 1300);
-  });
+    // ---------- Intro video: fixed background, fades then pauses as you scroll ----------
+    const introVideoFrame = document.getElementById('introVideoFrame');
+    const introVideoEl = document.getElementById('introVideoEl');
+    if (introVideoFrame && introVideoEl) {
+      let rafId;
+      let wasZero = false;
+      const updateIntroFade = () => {
+        const fadeDistance = Math.max(window.innerHeight, 1);
+        const opacity = Math.max(0, 1 - (window.scrollY / fadeDistance));
+        introVideoFrame.style.opacity = opacity;
+        if (opacity <= 0) {
+          if (!wasZero) { introVideoEl.pause(); wasZero = true; }
+        } else if (wasZero) {
+          introVideoEl.play(); wasZero = false;
+        }
+      };
+      const onScroll = () => {
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(updateIntroFade);
+      };
+      updateIntroFade();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', updateIntroFade);
+    }
 
-  // ---------- Custom cursor ----------
-  const cursorDot = document.getElementById('cursorDot');
-  window.addEventListener('mousemove', (e) => {
-    cursorDot.style.left = e.clientX + 'px';
-    cursorDot.style.top = e.clientY + 'px';
-  });
-  document.querySelectorAll('a, .season-card, .team-item, .gallery-item, .robo-card').forEach(el => {
-    el.addEventListener('mouseenter', () => cursorDot.classList.add('big'));
-    el.addEventListener('mouseleave', () => cursorDot.classList.remove('big'));
-  });
+    // ---------- Header scroll state ----------
+    const header = document.getElementById('siteHeader');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 40);
+    });
 
-  // ---------- Intro video: fixed background, fades then pauses as you scroll ----------
-  const introVideoFrame = document.getElementById('introVideoFrame');
-  const introVideoEl = document.getElementById('introVideoEl');
-  if (introVideoFrame && introVideoEl) {
-    let rafId;
-    let wasZero = false;
-    const updateIntroFade = () => {
-      const fadeDistance = Math.max(window.innerHeight, 1);
-      const opacity = Math.max(0, 1 - (window.scrollY / fadeDistance));
-      introVideoFrame.style.opacity = opacity;
-      if (opacity <= 0) {
-        if (!wasZero) { introVideoEl.pause(); wasZero = true; }
-      } else if (wasZero) {
-        introVideoEl.play(); wasZero = false;
+    // ---------- 3D cube (STL-style mesh) driven by cursor position ----------
+    // Coordinate frame: each square is treated as 2x2 units, centered at origin.
+    // Raw cursor offset (in pixels) from the frame's center is divided by
+    // half the frame's own pixel size, so the result is always -1..1
+    // regardless of whether the square renders at laptop or phone resolution.
+    // Spec: x = -1 -> -180deg, x = -0.5 -> -90deg, x = 0 -> 0deg,
+    //       x = 0.5 -> +90deg, x = 1 -> +180deg.
+    // Linear map: angle(radians) = PI * x
+    function xToYawRadians(x) { return Math.PI * x; }
+    function yToPitchRadians(y) { return Math.PI * y; }
+
+    // Converts a raw pixel offset from center into the -1..1 frame value by
+    // dividing by half the square's measured pixel size (its "radius").
+    // This is the step that makes rotation identical across screen sizes:
+    // a bigger square has a bigger divisor, so the same fractional cursor
+    // position always yields the same angle, on a laptop or a phone.
+    function pixelOffsetToUnit(offsetPx, squarePx) {
+      const halfSquare = squarePx;
+      return offsetPx / halfSquare / 2 * 3;
+    }
+
+    function initRoboCube(canvas, opts = {}) {
+      const parent = canvas.parentElement;
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+      camera.position.set(0, 0, 5.2);
+
+      // Lighting — key + fill + rim, so a plain cube still reads as a solid part
+      const key = new THREE.DirectionalLight(0xffffff, 1.1);
+      key.position.set(3, 4, 5);
+      scene.add(key);
+      const fill = new THREE.DirectionalLight(0x8c9a8c, 0.5);
+      fill.position.set(-4, -2, 2);
+      scene.add(fill);
+      const rim = new THREE.DirectionalLight(0xe8482c, 0.8);
+      rim.position.set(-2, 3, -4);
+      scene.add(rim);
+      scene.add(new THREE.AmbientLight(0x404040, 0.6));
+
+      // The cube itself — standing in for an imported STL mesh.
+      // Rubik's cube face order for BoxGeometry: +X, -X, +Y, -Y, +Z, -Z
+      const size = opts.size || 1.6;
+      const geometry = new THREE.BoxGeometry(size, size, size);
+      const faceColors = [0xC41E3A, 0xFF8C00, 0xFFFFFF, 0xFFD500, 0x009E60, 0x0051BA]; // red, orange, white, yellow, green, blue
+      const materials = faceColors.map(color => new THREE.MeshStandardMaterial({
+        color,
+        metalness: 0.15,
+        roughness: 0.5,
+        flatShading: true
+      }));
+      const cube = new THREE.Mesh(geometry, materials);
+      scene.add(cube);
+
+      // Faint edge lines so the geometry reads clearly at small sizes
+      const edges = new THREE.EdgesGeometry(geometry);
+      const edgeLines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x0a0b0d, linewidth: 1 }));
+      cube.add(edgeLines);
+
+      let targetYaw = 0, targetPitch = 0;
+      let currentYaw = 0, currentPitch = 0;
+
+      function resize() {
+        const w = parent.clientWidth, h = parent.clientHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
       }
-    };
-    const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(updateIntroFade);
-    };
-    updateIntroFade();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', updateIntroFade);
-  }
+      resize();
+      window.addEventListener('resize', resize);
 
-  // ---------- Header scroll state ----------
-  const header = document.getElementById('siteHeader');
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 40);
-  });
+      function setFromNormalized(nx, ny) {
+        // nx, ny expected in [-1, 1], (0,0) = center of frame
+        targetYaw = xToYawRadians(nx);
+        targetPitch = yToPitchRadians(ny);
+      }
 
-  // ---------- 3D cube (STL-style mesh) driven by cursor position ----------
-  // Coordinate frame: each square is treated as 2x2 units, centered at origin.
-  // Raw cursor offset (in pixels) from the frame's center is divided by
-  // half the frame's own pixel size, so the result is always -1..1
-  // regardless of whether the square renders at laptop or phone resolution.
-  // Spec: x = -1 -> -180deg, x = -0.5 -> -90deg, x = 0 -> 0deg,
-  //       x = 0.5 -> +90deg, x = 1 -> +180deg.
-  // Linear map: angle(radians) = PI * x
-  function xToYawRadians(x){ return Math.PI * x; }
-  function yToPitchRadians(y){ return Math.PI * y; }
+      function animate() {
+        requestAnimationFrame(animate);
+        // ease toward target so movement feels alive, not snapped
+        currentYaw += (targetYaw - currentYaw) * 0.12;
+        currentPitch += (targetPitch - currentPitch) * 0.12;
+        cube.rotation.y = currentYaw;
+        cube.rotation.x = currentPitch;
+        renderer.render(scene, camera);
+      }
+      animate();
 
-  // Converts a raw pixel offset from center into the -1..1 frame value by
-  // dividing by half the square's measured pixel size (its "radius").
-  // This is the step that makes rotation identical across screen sizes:
-  // a bigger square has a bigger divisor, so the same fractional cursor
-  // position always yields the same angle, on a laptop or a phone.
-  function pixelOffsetToUnit(offsetPx, squarePx){
-    const halfSquare = squarePx ;
-    return offsetPx / halfSquare / 2 * 3;
-  }
-
-  function initRoboCube(canvas, opts = {}){
-    const parent = canvas.parentElement;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0, 5.2);
-
-    // Lighting — key + fill + rim, so a plain cube still reads as a solid part
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
-    key.position.set(3, 4, 5);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0x8c9a8c, 0.5);
-    fill.position.set(-4, -2, 2);
-    scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xe8482c, 0.8);
-    rim.position.set(-2, 3, -4);
-    scene.add(rim);
-    scene.add(new THREE.AmbientLight(0x404040, 0.6));
-
-    // The cube itself — standing in for an imported STL mesh.
-    // Rubik's cube face order for BoxGeometry: +X, -X, +Y, -Y, +Z, -Z
-    const size = opts.size || 1.6;
-    const geometry = new THREE.BoxGeometry(size, size, size);
-    const faceColors = [0xC41E3A, 0xFF8C00, 0xFFFFFF, 0xFFD500, 0x009E60, 0x0051BA]; // red, orange, white, yellow, green, blue
-    const materials = faceColors.map(color => new THREE.MeshStandardMaterial({
-      color,
-      metalness: 0.15,
-      roughness: 0.5,
-      flatShading: true
-    }));
-    const cube = new THREE.Mesh(geometry, materials);
-    scene.add(cube);
-
-    // Faint edge lines so the geometry reads clearly at small sizes
-    const edges = new THREE.EdgesGeometry(geometry);
-    const edgeLines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x0a0b0d, linewidth:1 }));
-    cube.add(edgeLines);
-
-    let targetYaw = 0, targetPitch = 0;
-    let currentYaw = 0, currentPitch = 0;
-
-    function resize(){
-      const w = parent.clientWidth, h = parent.clientHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    function setFromNormalized(nx, ny){
-      // nx, ny expected in [-1, 1], (0,0) = center of frame
-      targetYaw = xToYawRadians(nx);
-      targetPitch = yToPitchRadians(ny);
+      return { setFromNormalized, resize };
     }
 
-    function animate(){
-      requestAnimationFrame(animate);
-      // ease toward target so movement feels alive, not snapped
-      currentYaw += (targetYaw - currentYaw) * 0.12;
-      currentPitch += (targetPitch - currentPitch) * 0.12;
-      cube.rotation.y = currentYaw;
-      cube.rotation.x = currentPitch;
-      renderer.render(scene, camera);
-    }
-    animate();
+    // Wire the hero card's cube to cursor position across its own frame
+    const heroCubeCanvas = document.querySelector('#roboCard [data-robo-cube]');
+    if (heroCubeCanvas && window.THREE) {
+      const heroCube = initRoboCube(heroCubeCanvas, { size: 1.7 });
+      const card = document.getElementById('roboCard');
+      const glare = document.getElementById('roboGlare');
+      const stage = card.parentElement.parentElement;
 
-    return { setFromNormalized, resize };
-  }
-
-  // Wire the hero card's cube to cursor position across its own frame
-  const heroCubeCanvas = document.querySelector('#roboCard [data-robo-cube]');
-  if (heroCubeCanvas && window.THREE) {
-    const heroCube = initRoboCube(heroCubeCanvas, { size: 1.7 });
-    const card = document.getElementById('roboCard');
-    const glare = document.getElementById('roboGlare');
-    const stage = card.parentElement.parentElement;
-
-    stage.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      // Raw pixel offset of the cursor from the frame's own center
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const offsetX = e.clientX - centerX;
-      const offsetY = e.clientY - centerY;
-      // Divide by this square's own size (in the pixels it's actually
-      // rendered at) so a bigger frame on a laptop and a smaller frame
-      // on a phone produce the same rotation for the same cursor fraction
-      const nx = pixelOffsetToUnit(offsetX, rect.width);
-      const ny = pixelOffsetToUnit(offsetY, rect.height);
-      heroCube.setFromNormalized(nx, ny);
-
-      glare.style.setProperty('--gx', `${((nx+1)/2)*100}%`);
-      glare.style.setProperty('--gy', `${((ny+1)/2)*100}%`);
-    });
-    stage.addEventListener('mouseleave', () => {
-      heroCube.setFromNormalized(0, 0);
-    });
-  }
-
-  // Wire every season-card cube the same way — each frame is its own
-  // independent 2x2 coordinate space, centered on that card.
-  if (window.THREE) {
-    document.querySelectorAll('.season-cube-frame [data-robo-cube]').forEach((canvas) => {
-      const frame = canvas.parentElement;
-      const cubeCtl = initRoboCube(canvas, { size: 1.3 });
-
-      frame.addEventListener('mousemove', (e) => {
-        const rect = frame.getBoundingClientRect();
+      stage.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        // Raw pixel offset of the cursor from the frame's own center
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         const offsetX = e.clientX - centerX;
         const offsetY = e.clientY - centerY;
+        // Divide by this square's own size (in the pixels it's actually
+        // rendered at) so a bigger frame on a laptop and a smaller frame
+        // on a phone produce the same rotation for the same cursor fraction
         const nx = pixelOffsetToUnit(offsetX, rect.width);
         const ny = pixelOffsetToUnit(offsetY, rect.height);
-        cubeCtl.setFromNormalized(nx, ny);
+        heroCube.setFromNormalized(nx, ny);
+
+        glare.style.setProperty('--gx', `${((nx + 1) / 2) * 100}%`);
+        glare.style.setProperty('--gy', `${((ny + 1) / 2) * 100}%`);
       });
-      frame.addEventListener('mouseleave', () => {
-        cubeCtl.setFromNormalized(0, 0);
+      stage.addEventListener('mouseleave', () => {
+        heroCube.setFromNormalized(0, 0);
+      });
+    }
+
+    // Wire every season-card cube the same way — each frame is its own
+    // independent 2x2 coordinate space, centered on that card.
+    if (window.THREE) {
+      document.querySelectorAll('.season-cube-frame [data-robo-cube]').forEach((canvas) => {
+        const frame = canvas.parentElement;
+        const cubeCtl = initRoboCube(canvas, { size: 1.3 });
+
+        frame.addEventListener('mousemove', (e) => {
+          const rect = frame.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const offsetX = e.clientX - centerX;
+          const offsetY = e.clientY - centerY;
+          const nx = pixelOffsetToUnit(offsetX, rect.width);
+          const ny = pixelOffsetToUnit(offsetY, rect.height);
+          cubeCtl.setFromNormalized(nx, ny);
+        });
+        frame.addEventListener('mouseleave', () => {
+          cubeCtl.setFromNormalized(0, 0);
+        });
+      });
+    }
+
+    // ---------- ROBOT DETAIL MODAL ----------
+    // Modular media registry: add entries here to populate each robot's
+    // popup gallery. Nothing else needs to change — new items are
+    // automatically tiled into the 3-column grid and, if there are enough
+    // to overflow the panel, the whole track auto-scrolls upward as a loop.
+    //
+    // type: 'image' | 'video'
+    // src:  path or URL to the file
+    // poster (optional, video only): thumbnail shown before playback
+    const SEASON_MEDIA = {
+      'kickathon': [
+        { type: 'image', src: '2026-2027/KICKOFF1.jpeg' },
+        { type: 'image', src: '2026-2027/V1.jpeg' },
+        { type: 'image', src: '2026-2027/output.gif' },
+        { type: 'image', src: '2026-2027/crash.gif' },
+        { type: 'image', src: '2026-2027/dance.gif' },
+        { type: 'image', src: '2026-2027/GROUP.jpeg' },
+        { type: 'image', src: '2026-2027/score.gif' },
+        { type: 'image', src: '2026-2027/measure.jpeg' },
+        { type: 'image', src: '2026-2027/work.jpeg' }
+        // Add more like:
+        // { type: 'image', src: '2026-2027/V2.png' },
+        // { type: 'video', src: '2026-2027/build-clip.mp4', poster: '2026-2027/build-clip-poster.png' },
+      ],
+      '2025-26': [],
+      '2024-25': [],
+      '2023-24': [],
+      '2022-23': [],
+      'coming-soon': [
+        { type: 'image', src: 'https://picsum.photos/id/1025/700/440' },
+      ],
+    };
+
+    const roboModal = document.getElementById('roboModal');
+    const roboModalCard = document.getElementById('roboModalCard');
+    const roboModalTrack = document.getElementById('roboModalTrack');
+    let lastFocusedEl = null;
+
+    function buildTile(item) {
+      const tile = document.createElement('div');
+      tile.className = 'robo-tile';
+      if (item.type === 'video') {
+        const video = document.createElement('video');
+        video.src = item.src;
+        if (item.poster) video.poster = item.poster;
+        video.controls = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.preload = 'metadata';
+        tile.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.alt || 'Robot media';
+        img.loading = 'lazy';
+        tile.appendChild(img);
+      }
+      return tile;
+    }
+
+    function populateGallery(seasonId) {
+      const items = SEASON_MEDIA[seasonId] || [];
+      roboModalTrack.innerHTML = '';
+      roboModalTrack.classList.remove('robo-modal-track-anim');
+      roboModalTrack.style.removeProperty('--scroll-duration');
+      roboModalTrack.style.removeProperty('--scroll-distance');
+
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'robo-modal-empty';
+        empty.textContent = 'No photos or videos yet — check back soon.';
+        roboModalTrack.appendChild(empty);
+        return;
+      }
+
+      // Append items
+      items.forEach(item => roboModalTrack.appendChild(buildTile(item)));
+
+      // Ensure DOM is fully rendered and image dimensions are registered
+      const images = roboModalTrack.querySelectorAll('img');
+      const imagePromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve; // Continue if error
+        });
+      });
+
+      Promise.all(imagePromises).then(() => {
+        const viewport = roboModalTrack.parentElement;
+        const contentHeight = roboModalTrack.scrollHeight;
+        const viewportHeight = viewport.clientHeight;
+
+        if (contentHeight > viewportHeight) {
+          // Duplicate tiles so loop seamlessly overlaps
+          const clones = Array.from(roboModalTrack.children).map(el => el.cloneNode(true));
+          clones.forEach(clone => roboModalTrack.appendChild(clone));
+
+          const distance = contentHeight;
+          const pxPerSecond = 30; // Smooth scrolling speed
+          const duration = Math.max(distance / pxPerSecond, 8);
+
+          roboModalTrack.style.setProperty('--scroll-distance', `${distance}px`);
+          roboModalTrack.style.setProperty('--scroll-duration', `${duration}s`);
+          roboModalTrack.classList.add('robo-modal-track-anim');
+        }
+      });
+    }
+    function populateCard(seasonCard) {
+      // Clone the season card's existing robo-media/robo-body content into
+      // a robo-card-styled panel, so the modal always mirrors what's on
+      // the actual card (image, cube canvas, title, tag, description).
+      const media = seasonCard.querySelector('.season-media');
+      const body = seasonCard.querySelector('.season-body');
+
+      const card = document.createElement('div');
+      card.className = 'robo-card';
+
+      const mediaWrap = document.createElement('div');
+      mediaWrap.className = 'robo-media';
+      if (media) {
+        Array.from(media.children).forEach(child => {
+          if (child.classList.contains('season-year')) return; // shown as tag instead
+          mediaWrap.appendChild(child.cloneNode(true));
+        });
+      }
+      card.appendChild(mediaWrap);
+
+      const tagText = body?.querySelector('.tag')?.textContent || '';
+      const yearText = media?.querySelector('.season-year')?.textContent || '';
+      if (tagText) {
+        const tag = document.createElement('div');
+        tag.className = 'robo-tag';
+        tag.textContent = tagText;
+        card.appendChild(tag);
+      }
+      if (yearText) {
+        const num = document.createElement('div');
+        num.className = 'robo-num';
+        num.textContent = yearText;
+        card.appendChild(num);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'robo-info';
+      const h3 = document.createElement('h3');
+      h3.id = 'roboModalTitle';
+      h3.textContent = body?.querySelector('h3')?.textContent || 'Robot';
+      const p = document.createElement('p');
+      p.textContent = body?.querySelector('p')?.textContent || '';
+      info.appendChild(h3);
+      info.appendChild(p);
+      card.appendChild(info);
+
+      roboModalCard.innerHTML = '';
+      roboModalCard.appendChild(card);
+
+      // Re-initialize any 3D cube canvas that got cloned into the modal
+      const clonedCanvas = mediaWrap.querySelector('[data-robo-cube]');
+      if (clonedCanvas && window.THREE) {
+        const cubeCtl = initRoboCube(clonedCanvas, { size: 1.6 });
+        mediaWrap.addEventListener('mousemove', (e) => {
+          const rect = mediaWrap.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          const nx = pixelOffsetToUnit(e.clientX - centerX, rect.width);
+          const ny = pixelOffsetToUnit(e.clientY - centerY, rect.height);
+          cubeCtl.setFromNormalized(nx, ny);
+        });
+        mediaWrap.addEventListener('mouseleave', () => cubeCtl.setFromNormalized(0, 0));
+      }
+    }
+
+    function openRoboModal(seasonCard) {
+      const seasonId = seasonCard.dataset.seasonId;
+      populateCard(seasonCard);
+      populateGallery(seasonId);
+      lastFocusedEl = document.activeElement;
+      roboModal.classList.add('open');
+      roboModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      roboModal.querySelector('.robo-modal-close').focus();
+    }
+
+    function closeRoboModal() {
+      roboModal.classList.remove('open');
+      roboModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (lastFocusedEl) lastFocusedEl.focus();
+    }
+
+    document.querySelectorAll('.season-card[data-season-id]').forEach(card => {
+      card.addEventListener('click', () => openRoboModal(card));
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openRoboModal(card);
+        }
       });
     });
-  }
 
-  // ---------- ROBOT DETAIL MODAL ----------
-  // Modular media registry: add entries here to populate each robot's
-  // popup gallery. Nothing else needs to change — new items are
-  // automatically tiled into the 3-column grid and, if there are enough
-  // to overflow the panel, the whole track auto-scrolls upward as a loop.
-  //
-  // type: 'image' | 'video'
-  // src:  path or URL to the file
-  // poster (optional, video only): thumbnail shown before playback
-  const SEASON_MEDIA = {
-    'kickathon': [
-      { type: 'image', src: '2026-2027/V1.jpeg' },
-      { type: 'video', src: '2026-2027/VID1.webm'}
-      // Add more like:
-      // { type: 'image', src: '2026-2027/V2.png' },
-      // { type: 'video', src: '2026-2027/build-clip.mp4', poster: '2026-2027/build-clip-poster.png' },
-    ],
-    '2025-26': [],
-    '2024-25': [],
-    '2023-24': [],
-    '2022-23': [],
-    'coming-soon': [
-      { type: 'image', src: 'https://picsum.photos/id/1025/700/440' },
-    ],
-  };
+    roboModal.querySelectorAll('[data-modal-close]').forEach(el => {
+      el.addEventListener('click', closeRoboModal);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && roboModal.classList.contains('open')) closeRoboModal();
+    });
 
-  const roboModal = document.getElementById('roboModal');
-  const roboModalCard = document.getElementById('roboModalCard');
-  const roboModalTrack = document.getElementById('roboModalTrack');
-  let lastFocusedEl = null;
+    // ---------- Scroll reveal ----------
+    const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => io.observe(el));
 
-  function buildTile(item){
-    const tile = document.createElement('div');
-    tile.className = 'robo-tile';
-    if (item.type === 'video') {
-      const video = document.createElement('video');
-      video.src = item.src;
-      if (item.poster) video.poster = item.poster;
-      video.controls = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      tile.appendChild(video);
+    // ---------- Mobile nav (simple toggle placeholder) ----------
+    document.querySelector('.burger').addEventListener('click', () => {
+      alert('Mobile menu — wire this up to a real drawer when we move past the prototype.');
+    });
+
+    // ---------- Dark/Light mode toggle ----------
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
+
+    // Check saved preference or system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+    // Apply saved or default theme
+    if (currentTheme === 'light-mode') {
+      htmlElement.classList.add('light-mode');
+      themeToggle.textContent = '🌶️';
     } else {
-      const img = document.createElement('img');
-      img.src = item.src;
-      img.alt = item.alt || 'Robot media';
-      img.loading = 'lazy';
-      tile.appendChild(img);
-    }
-    return tile;
-  }
-
-  function populateGallery(seasonId){
-    const items = SEASON_MEDIA[seasonId] || [];
-    roboModalTrack.innerHTML = '';
-    roboModalTrack.classList.remove('robo-modal-track-anim');
-    roboModalTrack.style.removeProperty('--scroll-duration');
-    roboModalTrack.style.removeProperty('--scroll-distance');
-
-    if (items.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'robo-modal-empty';
-      empty.textContent = 'No photos or videos yet — check back soon.';
-      roboModalTrack.appendChild(empty);
-      return;
+      htmlElement.classList.remove('light-mode');
+      themeToggle.textContent = '🌶️';
     }
 
-    items.forEach(item => roboModalTrack.appendChild(buildTile(item)));
+    // Toggle theme on click
+    themeToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      htmlElement.classList.toggle('light-mode');
+      const isLightMode = htmlElement.classList.contains('light-mode');
+      localStorage.setItem('theme', isLightMode ? 'light-mode' : 'dark-mode');
+    });</script>
 
-    // If the tiled content is taller than its viewport, duplicate the set
-    // once and animate a seamless upward loop (a vertical marquee).
-    requestAnimationFrame(() => {
-      const viewport = roboModalTrack.parentElement;
-      const contentHeight = roboModalTrack.scrollHeight;
-      const viewportHeight = viewport.clientHeight;
-
-      if (contentHeight > viewportHeight) {
-        // Duplicate tiles so the loop has no visible seam
-        const clones = Array.from(roboModalTrack.children).map(el => el.cloneNode(true));
-        clones.forEach(clone => roboModalTrack.appendChild(clone));
-
-        const distance = contentHeight; // scroll exactly one full set's height
-        const pxPerSecond = 34; // slideshow speed
-        const duration = Math.max(distance / pxPerSecond, 8);
-
-        roboModalTrack.style.setProperty('--scroll-distance', `${distance}px`);
-        roboModalTrack.style.setProperty('--scroll-duration', `${duration}s`);
-        roboModalTrack.classList.add('robo-modal-track-anim');
-      }
-    });
-  }
-
-  function populateCard(seasonCard){
-    // Clone the season card's existing robo-media/robo-body content into
-    // a robo-card-styled panel, so the modal always mirrors what's on
-    // the actual card (image, cube canvas, title, tag, description).
-    const media = seasonCard.querySelector('.season-media');
-    const body = seasonCard.querySelector('.season-body');
-
-    const card = document.createElement('div');
-    card.className = 'robo-card';
-
-    const mediaWrap = document.createElement('div');
-    mediaWrap.className = 'robo-media';
-    if (media) {
-      Array.from(media.children).forEach(child => {
-        if (child.classList.contains('season-year')) return; // shown as tag instead
-        mediaWrap.appendChild(child.cloneNode(true));
-      });
-    }
-    card.appendChild(mediaWrap);
-
-    const tagText = body?.querySelector('.tag')?.textContent || '';
-    const yearText = media?.querySelector('.season-year')?.textContent || '';
-    if (tagText) {
-      const tag = document.createElement('div');
-      tag.className = 'robo-tag';
-      tag.textContent = tagText;
-      card.appendChild(tag);
-    }
-    if (yearText) {
-      const num = document.createElement('div');
-      num.className = 'robo-num';
-      num.textContent = yearText;
-      card.appendChild(num);
-    }
-
-    const info = document.createElement('div');
-    info.className = 'robo-info';
-    const h3 = document.createElement('h3');
-    h3.id = 'roboModalTitle';
-    h3.textContent = body?.querySelector('h3')?.textContent || 'Robot';
-    const p = document.createElement('p');
-    p.textContent = body?.querySelector('p')?.textContent || '';
-    info.appendChild(h3);
-    info.appendChild(p);
-    card.appendChild(info);
-
-    roboModalCard.innerHTML = '';
-    roboModalCard.appendChild(card);
-
-    // Re-initialize any 3D cube canvas that got cloned into the modal
-    const clonedCanvas = mediaWrap.querySelector('[data-robo-cube]');
-    if (clonedCanvas && window.THREE) {
-      const cubeCtl = initRoboCube(clonedCanvas, { size: 1.6 });
-      mediaWrap.addEventListener('mousemove', (e) => {
-        const rect = mediaWrap.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const nx = pixelOffsetToUnit(e.clientX - centerX, rect.width);
-        const ny = pixelOffsetToUnit(e.clientY - centerY, rect.height);
-        cubeCtl.setFromNormalized(nx, ny);
-      });
-      mediaWrap.addEventListener('mouseleave', () => cubeCtl.setFromNormalized(0, 0));
-    }
-  }
-
-  function openRoboModal(seasonCard){
-    const seasonId = seasonCard.dataset.seasonId;
-    populateCard(seasonCard);
-    populateGallery(seasonId);
-    lastFocusedEl = document.activeElement;
-    roboModal.classList.add('open');
-    roboModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    roboModal.querySelector('.robo-modal-close').focus();
-  }
-
-  function closeRoboModal(){
-    roboModal.classList.remove('open');
-    roboModal.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    if (lastFocusedEl) lastFocusedEl.focus();
-  }
-
-  document.querySelectorAll('.season-card[data-season-id]').forEach(card => {
-    card.addEventListener('click', () => openRoboModal(card));
-    card.setAttribute('tabindex', '0');
-    card.setAttribute('role', 'button');
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openRoboModal(card);
-      }
-    });
-  });
-
-  roboModal.querySelectorAll('[data-modal-close]').forEach(el => {
-    el.addEventListener('click', closeRoboModal);
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && roboModal.classList.contains('open')) closeRoboModal();
-  });
-
-  // ---------- Scroll reveal ----------
-  const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('in');
-        io.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el => io.observe(el));
-
-  // ---------- Mobile nav (simple toggle placeholder) ----------
-  document.querySelector('.burger').addEventListener('click', () => {
-    alert('Mobile menu — wire this up to a real drawer when we move past the prototype.');
-  });
-
-  // ---------- Dark/Light mode toggle ----------
-  const themeToggle = document.getElementById('themeToggle');
-  const htmlElement = document.documentElement;
-  
-  // Check saved preference or system preference
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-  
-  // Apply saved or default theme
-  if(currentTheme === 'light-mode') {
-    htmlElement.classList.add('light-mode');
-    themeToggle.textContent = '🌶️';
-  } else {
-    htmlElement.classList.remove('light-mode');
-    themeToggle.textContent = '🌶️';
-  }
-  
-  // Toggle theme on click
-  themeToggle.addEventListener('click', (e) => {
-    e.preventDefault();
-    htmlElement.classList.toggle('light-mode');
-    const isLightMode = htmlElement.classList.contains('light-mode');
-    localStorage.setItem('theme', isLightMode ? 'light-mode' : 'dark-mode');
-  });</script>
-
-<script src="chat-widget.js"></script>
+  <script src="chat-widget.js"></script>
 </body>
+
 </html>
