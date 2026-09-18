@@ -88,7 +88,20 @@
         body: JSON.stringify({ messages: state.messages }),
       });
 
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) {
+        // The server returns a JSON body describing what actually went
+        // wrong (rate limited, misconfigured, upstream down, timed out,
+        // etc.) — read it so the user sees the real reason instead of one
+        // generic message every time.
+        let serverMessage = "";
+        try {
+          const errBody = await res.json();
+          serverMessage = errBody && errBody.error ? errBody.error : "";
+        } catch (_) {
+          // Body wasn't JSON (or was empty) — fall back below.
+        }
+        throw new Error(serverMessage || `Request failed (HTTP ${res.status})`);
+      }
 
       botMsgEl.classList.remove("typing");
 
@@ -140,7 +153,11 @@
       }
     } catch (err) {
       botMsgEl.classList.remove("typing");
-      botMsgEl.textContent = "Sorry, something went wrong. Please try again later.";
+      // Show the specific reason when we have one (from the server's JSON
+      // error body above); otherwise fall back to a generic message.
+      botMsgEl.textContent = err && err.message
+        ? err.message
+        : "Sorry, something went wrong. Please try again later.";
       console.error(err);
     } finally {
       sendBtn.disabled = false;

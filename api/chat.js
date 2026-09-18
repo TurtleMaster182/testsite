@@ -38,7 +38,7 @@ A: [FILL IN]
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
 const MODELS = [
-  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
   'gemini-3.1-flash-lite'
 ];
 export const config = {
@@ -87,9 +87,19 @@ export default async function handler(req) {
     const PER_MODEL_TIMEOUT_MS = 8000;
 
     let geminiRes = null;
+    // Tracks the error from the CURRENT attempt only — reset at the top of
+    // every loop iteration so a later model's outcome (success, or a
+    // different failure) never gets described using a previous model's
+    // stale error. lastErrorDetail below always reflects the most recent
+    // attempt made, which is what gets surfaced if every attempt fails.
     let lastErrorDetail = '';
+    let lastErrorStatus = null; // upstream HTTP status of the last failed attempt, if any
 
     for (const model of MODELS) {
+      // Reset per-attempt state so nothing leaks from the previous model.
+      lastErrorDetail = '';
+      lastErrorStatus = null;
+
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT_MS);
@@ -108,6 +118,10 @@ export default async function handler(req) {
 
         if (geminiRes.ok) {
           clearTimeout(timeoutId);
+          // Success — clear any leftover error state from earlier models
+          // that failed before this one succeeded.
+          lastErrorDetail = '';
+          lastErrorStatus = null;
           break;
         }
 
@@ -117,6 +131,7 @@ export default async function handler(req) {
         const status = geminiRes.status;
         let bodyText = '';
         try { bodyText = await geminiRes.text(); } catch (_) {}
+        lastErrorStatus = status;
         lastErrorDetail = `[${model}] HTTP ${status}: ${bodyText.slice(0, 300)}`;
         console.error('Gemini request failed:', lastErrorDetail);
 
@@ -127,7 +142,13 @@ export default async function handler(req) {
           geminiRes = null;
           break;
         }
+
+        // 429 / 5xx / other transient error — clear geminiRes so the loop's
+        // final check doesn't mistake this failed response for success, and
+        // move on to try the next model.
+        geminiRes = null;
       } catch (err) {
+        lastErrorStatus = err.name === 'AbortError' ? 504 : null;
         lastErrorDetail = `[${model}] ${err.name === 'AbortError' ? 'timed out' : err.message}`;
         console.error('Gemini request error:', lastErrorDetail);
         geminiRes = null;
@@ -136,10 +157,29 @@ export default async function handler(req) {
       }
     }
 
-    if (!geminiRes || !geminiRes.ok) {
+    if (!geminiRes) {
       console.error('All model attempts failed. Last error:', lastErrorDetail);
-      return new Response(JSON.stringify({ error: 'Service temporarily unavailable.', detail: lastErrorDetail }), {
-        status: 503,
+
+      // Map the last upstream status to something meaningful for the
+      // client instead of a single generic "unavailable" for every case.
+      let clientStatus = 503;
+      let clientMessage = 'Service temporarily unavailable. Please try again in a moment.';
+      if (lastErrorStatus === 429) {
+        clientStatus = 429;
+        clientMessage = 'The assistant is getting a lot of requests right now. Please try again shortly.';
+      } else if (lastErrorStatus === 400 || lastErrorStatus === 401 || lastErrorStatus === 403) {
+        clientStatus = 502;
+        clientMessage = 'The assistant is misconfigured. Please contact the team.';
+      } else if (lastErrorStatus === 504 || (lastErrorStatus === null && /timed out/.test(lastErrorDetail))) {
+        clientStatus = 504;
+        clientMessage = 'The assistant took too long to respond. Please try again.';
+      } else if (typeof lastErrorStatus === 'number' && lastErrorStatus >= 500) {
+        clientStatus = 502;
+        clientMessage = 'The assistant service is having issues right now. Please try again shortly.';
+      }
+
+      return new Response(JSON.stringify({ error: clientMessage, detail: lastErrorDetail }), {
+        status: clientStatus,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
