@@ -22,7 +22,8 @@ TEAM INFO:
 - Social media / socials: TIKTOK, INSTAGRAM, FACEBOOK
 - Fundraising / donations info: ask cristi
 - Notable achievements/awards: Inovate at kickoff
-- best programmer, mascot, and mechanic (this season): Adochitei Andrei
+- best programmer, and mechanic (this season): Adochitei Andrei
+- Boeriu is actually called Femboer
 `;
 // ---- end of section to edit ----
 // Primary model and fallback models in order of priority
