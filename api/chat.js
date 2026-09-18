@@ -217,6 +217,11 @@ export default async function handler(req) {
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
+            // Gemini sends CRLF line endings ("\r\n\r\n" between events),
+            // not bare "\n\n". Normalize to "\n" so all the splitting logic
+            // below (which assumes Unix line endings) works regardless of
+            // which the upstream API actually sends.
+            buffer = buffer.replace(/\r\n/g, '\n');
             console.log('RAW CHUNK FROM GEMINI:', JSON.stringify(buffer));
 
             // SSE events are separated by a blank line ("\n\n").
