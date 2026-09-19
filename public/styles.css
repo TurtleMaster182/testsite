@@ -9,6 +9,12 @@
       --sage: #8C9A8C;
       --line: rgba(245, 243, 238, 0.12);
       --ease: cubic-bezier(.22, 1, .36, 1);
+
+      /* Robot card surfaces (dark values = the original look) */
+      --card-bg: linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+      --card-media-bg: radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
+      --card-fade: linear-gradient(180deg, rgba(10, 11, 13, 0) 45%, rgba(10, 11, 13, 0.95) 100%);
+      --card-guide: rgba(245, 243, 238, 0.08);
     }
 
     :root.light-mode {
@@ -21,6 +27,14 @@
       --red-dim: #ff0000;
       --sage: #5a7a5a;
       --line: rgba(10, 11, 13, 0.12);
+
+      /* Robot cards in light mode: white, with a slight beige tint around the
+         edges so a silver / aluminium model stands out from the background. */
+      --card-tint: #ECE6DA;           /* the beige - adjust this one value to taste */
+      --card-bg: linear-gradient(160deg, #FFFFFF, var(--card-tint) 100%);
+      --card-media-bg: radial-gradient(ellipse at 50% 40%, #FFFFFF 0%, var(--card-tint) 100%);
+      --card-fade: linear-gradient(180deg, rgba(255, 255, 255, 0) 45%, rgba(245, 241, 232, 0.96) 100%);
+      --card-guide: rgba(10, 11, 13, 0.10);
     }
 
     * {
@@ -30,7 +44,9 @@
     }
 
     html {
-      scroll-behavior: smooth;
+      /* Smooth scrolling is handled in JS (see "Section snapping" in script.js)
+         so the snap easing is consistent and page-load reset is instant. */
+      scroll-behavior: auto;
     }
 
     body {
@@ -466,7 +482,7 @@
       max-width: 420px;
       aspect-ratio: 3/4;
       border: 1px solid var(--line);
-      background: linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+      background: var(--card-bg);
       transform-style: preserve-3d;
       transition: transform .15s ease-out, box-shadow .3s ease;
       will-change: transform;
@@ -480,7 +496,7 @@
       position: absolute;
       inset: 0;
       overflow: hidden;
-      background: radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
+      background: var(--card-media-bg);
     }
 
     .robo-media img {
@@ -504,14 +520,14 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(10, 11, 13, 0) 45%, rgba(10, 11, 13, 0.95) 100%);
+      background: var(--card-fade);
       pointer-events: none;
     }
 
     .frame-axis {
       position: absolute;
       inset: 18px;
-      border: 1px dashed rgba(245, 243, 238, 0.08);
+      border: 1px dashed var(--card-guide);
       pointer-events: none;
     }
 
@@ -519,7 +535,7 @@
     .frame-axis::after {
       content: '';
       position: absolute;
-      background: rgba(245, 243, 238, 0.08);
+      background: var(--card-guide);
     }
 
     .frame-axis::before {
@@ -861,7 +877,7 @@
     }
 
     .season-cube-frame {
-      background: radial-gradient(ellipse at 50% 40%, #1b1d19 0%, #0d0e0c 75%);
+      background: var(--card-media-bg);
     }
 
     .season-cube-frame .robo-canvas {
@@ -1016,7 +1032,7 @@
     .robo-modal-card {
       position: relative;
       border-right: 1px solid var(--line);
-      background: linear-gradient(160deg, var(--panel), #0d0e0c 70%);
+      background: var(--card-bg);
       overflow-y: auto;
     }
 

@@ -11,6 +11,11 @@
     href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Model loaders. Versions MUST match the three.js r128 above (0.128.0). -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>  <!-- .glb / .gltf (recommended) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>   <!-- .obj -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>   <!-- .mtl (textures for .obj) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>   <!-- .stl -->
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="chat-widget.css">
 </head>
@@ -49,10 +54,10 @@
     Your browser does not support the video tag.
   </video>
 </div>
-  <div class="intro-video-spacer"></div>
+  <div class="intro-video-spacer" data-snap></div>
 
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" data-snap>
     <div class="hero-grid">
       <div>
         <div class="hero-eyebrow"><span class="dot-live"></span> FTC Team 19044 · Iași, Romania</div>
@@ -68,7 +73,8 @@
         <div>
           <div class="robo-card" id="roboCard">
             <div class="robo-media">
-              <canvas class="robo-canvas" data-robo-cube></canvas>
+              <!-- To show a real robot: add data-model="models/robot.glb" to this canvas -->
+              <canvas class="robo-canvas" data-robo-cube data-model="models/robot.glb"></canvas>
               <div class="frame-axis"></div>
             </div>
             <div class="robo-glare" id="roboGlare"></div>
@@ -94,7 +100,7 @@
   </section>
 
   <!-- MISSION / ABOUT -->
-  <section class="mission" id="about">
+  <section class="mission" id="about" data-snap>
     <div class="wrap mission-grid">
       <div class="reveal-scale" style="position:relative;">
         <div class="mission-media">
@@ -120,7 +126,7 @@
   </section>
 
   <!-- SEASONS HORIZONTAL SCROLL -->
-  <section id="seasons">
+  <section id="seasons" data-snap>
     <div class="wrap">
       <div class="section-head reveal">
         <div>
@@ -141,13 +147,13 @@
           </div>
           <div class="season-body">
             <span class="tag">Kickathon</span>
-            <h3>Kickathon Robot</h3>
-            <p>Our Kickathon build — a fast, early-season prototype put together in the first days after kickoff.</p>
+            <h3>CRISTINA</h3>
+            <p>Decapotabila Cristina</p>
           </div>
         </div>
         <div class="season-card" data-season-id="2025-26">
           <div class="season-media season-cube-frame">
-            <canvas class="robo-canvas" data-robo-cube></canvas>
+              <canvas class="robo-canvas" data-robo-cube data-model="models/robot.glb"></canvas>
             <div class="season-year">2025–26</div>
           </div>
           <div class="season-body">
@@ -159,7 +165,7 @@
         </div>
         <div class="season-card" data-season-id="2024-25">
           <div class="season-media season-cube-frame">
-            <canvas class="robo-canvas" data-robo-cube></canvas>
+              <canvas class="robo-canvas" data-robo-cube data-model="models/robot.glb"></canvas>
             <div class="season-year">2024–25</div>
           </div>
           <div class="season-body">
@@ -170,7 +176,7 @@
         </div>
         <div class="season-card" data-season-id="2023-24">
           <div class="season-media season-cube-frame">
-            <canvas class="robo-canvas" data-robo-cube></canvas>
+              <canvas class="robo-canvas" data-robo-cube data-model="models/robot.glb"></canvas>
             <div class="season-year">2023–24</div>
           </div>
           <div class="season-body">
@@ -181,7 +187,7 @@
         </div>
         <div class="season-card" data-season-id="2022-23">
           <div class="season-media season-cube-frame">
-            <canvas class="robo-canvas" data-robo-cube></canvas>
+              <canvas class="robo-canvas" data-robo-cube data-model="models/robot.glb"></canvas>
             <div class="season-year">2022–23</div>
           </div>
           <div class="season-body">
@@ -230,7 +236,7 @@
 
 
   <!-- SPONSORS MARQUEE -->
-  <section id="sponsors" style="padding:0;">
+  <section id="sponsors" style="padding:0;" data-snap>
     <div class="wrap" style="padding:100px 40px 50px;">
       <div class="section-head reveal" style="margin-bottom:20px;">
         <div>
@@ -250,7 +256,7 @@
     </div>
   </section>
   <!-- EVENTS -->
-  <section id="events">
+  <section id="events" data-snap>
     <div class="wrap">
       <div class="section-head reveal">
         <div>
@@ -298,7 +304,7 @@
     </div>
   </section>
   <!-- GALLERY -->
-  <section id="gallery">
+  <section id="gallery" data-snap>
     <div class="wrap">
       <div class="section-head reveal">
         <div>
@@ -332,7 +338,7 @@
   </section>
 
   <!-- CTA -->
-  <section class="cta-section" id="contact">
+  <section class="cta-section" id="contact" data-snap>
     <div class="wrap reveal-scale">
       <h2>Fuel our<br>next season.</h2>
       <p>Whether it's funding, mentorship or shop space — every bit of support goes straight into the robot.</p>

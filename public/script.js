@@ -1,3 +1,180 @@
+// ---------- Always start at the top on refresh ----------
+// Stop the browser from restoring the previous scroll position, and jump
+// to 0 immediately (also on bfcache "back/forward" restores and on reload).
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+window.addEventListener('pageshow', (e) => { if (e.persisted) window.scrollTo(0, 0); });
+window.addEventListener('load', () => {
+  // Some browsers restore late, after layout; force it once more.
+  window.scrollTo(0, 0);
+  // Drop any #hash so a refresh doesn't jump to that section
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+});
+
+// ---------- Section snapping ----------
+// Behaviour: scroll freely; when you pause, the page glides to a section so
+// nothing is left half-aligned.
+//  - Scroll a little in a direction  -> it commits to the NEXT section that way.
+//  - Barely scroll / change your mind -> it settles back to where you were.
+//  - Sections that fit on screen are CENTERED in the viewport.
+//  - Sections taller than the screen snap to their TOP (and BOTTOM) edge, and
+//    you can scroll freely in between so long content stays readable.
+(function initSectionSnap() {
+  const targets = Array.from(document.querySelectorAll('[data-snap]'));
+  if (!targets.length) return;
+
+  // Respect reduced-motion, and skip touch devices where native momentum
+  // scrolling + scripted snapping tends to feel fighty.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  if (reduceMotion || coarsePointer) return;
+
+  const IDLE_MS = 110;      // scrolling must pause this long before we snap
+  const COMMIT_PX = 40;     // moved at least this far => commit to next section
+  const DURATION = 700;     // ms for the glide
+  const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  let idleTimer = null;
+  let animId = null;
+  let isAnimating = false;
+  let scrollbarDrag = false;
+  // The last position where the page was at rest. Direction is measured
+  // against this (not against wheel/scroll event timing, which is unreliable:
+  // browsers can apply the scroll before our listeners ever run).
+  let restY = window.scrollY;
+
+  const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
+  const clampY = y => Math.min(Math.max(y, 0), maxScroll());
+
+  // Every valid resting position for the current layout, sorted ascending.
+  // Returns [{ y, secTop, secBottom, tall }]
+  function getSnapPoints() {
+    const vh = window.innerHeight;
+    const pts = [];
+    targets.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const h = rect.height;
+      if (h <= vh) {
+        pts.push(clampY(top - (vh - h) / 2));           // fits: center it
+      } else {
+        pts.push(clampY(top));                          // tall: rest at its top...
+        pts.push(clampY(top + h - vh));                 // ...and at its bottom
+      }
+    });
+    return pts
+      .sort((a, b) => a - b)
+      .filter((p, i, arr) => i === 0 || Math.abs(p - arr[i - 1]) > 4);
+  }
+
+  // Are we in the "middle" of a tall section, between its top and bottom rest
+  // points? If so let the user scroll/read freely (no snapping).
+  function insideTallSection(y) {
+    const vh = window.innerHeight;
+    return targets.some(el => {
+      const rect = el.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const h = rect.height;
+      return h > vh && y > top + 4 && y < top + h - vh - 4;
+    });
+  }
+
+  function glideTo(targetY) {
+    cancelAnimationFrame(animId);
+    const startY = window.scrollY;
+    const dist = targetY - startY;
+    if (Math.abs(dist) < 2) { isAnimating = false; return; }
+    const start = performance.now();
+    isAnimating = true;
+    const step = (now) => {
+      const t = Math.min((now - start) / DURATION, 1);
+      window.scrollTo(0, startY + dist * easeInOutCubic(t));
+      if (t < 1) {
+        animId = requestAnimationFrame(step);
+      } else {
+        isAnimating = false;
+        restY = window.scrollY;
+      }
+    };
+    animId = requestAnimationFrame(step);
+  }
+
+  function snapNow() {
+    // Modal open (body scroll locked), scrollbar being dragged, or already gliding
+    if (document.body.style.overflow === 'hidden' || scrollbarDrag || isAnimating) return;
+
+    const y = window.scrollY;
+    const startY = restY;
+
+    if (insideTallSection(y)) { restY = y; return; }
+
+    const points = getSnapPoints();
+    if (!points.length) return;
+
+    const moved = y - startY;
+    let target;
+
+    if (Math.abs(moved) >= COMMIT_PX) {
+      // Deliberate scroll: go to the first snap point beyond where we started,
+      // in the direction we travelled (but not past where we are now, if we
+      // already sit right on one).
+      if (moved > 0) {
+        // nearest resting point at/after the current position, but strictly
+        // beyond the start point so a small nudge advances a whole section
+        target = points.find(p => p >= y - 2 && p > startY + 2);
+        if (target === undefined) target = points[points.length - 1];
+      } else {
+        target = [...points].reverse().find(p => p <= y + 2 && p < startY - 2);
+        if (target === undefined) target = points[0];
+      }
+    } else {
+      // Tiny movement: just settle to the closest resting point
+      target = points.reduce((best, p) => Math.abs(p - y) < Math.abs(best - y) ? p : best, points[0]);
+    }
+
+    if (Math.abs(target - y) < 2) restY = y;
+    glideTo(target);
+  }
+
+  function onScroll() {
+    if (isAnimating) return;                    // our own glide, ignore
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(snapNow, IDLE_MS);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // If the user grabs the wheel / keys mid-glide, hand control back instantly
+  const interrupt = () => {
+    if (isAnimating) { cancelAnimationFrame(animId); isAnimating = false; restY = window.scrollY; }
+  };
+  window.addEventListener('wheel', interrupt, { passive: true });
+  window.addEventListener('keydown', interrupt);
+
+  // Scrollbar dragging: don't yank the page out of the user's hand
+  window.addEventListener('mousedown', (e) => {
+    if (e.clientX >= document.documentElement.clientWidth) scrollbarDrag = true;
+  });
+  window.addEventListener('mouseup', () => {
+    if (scrollbarDrag) { scrollbarDrag = false; onScroll(); }
+  });
+
+  // Nav / anchor links: glide with the same easing, centering when it fits
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href');
+      if (id.length < 2) return;
+      const el = document.querySelector(id);
+      if (!el) return;
+      e.preventDefault();
+      const vh = window.innerHeight;
+      const rect = el.getBoundingClientRect();
+      const top = rect.top + window.scrollY;
+      const dest = rect.height <= vh ? top - (vh - rect.height) / 2 : top;
+      glideTo(clampY(dest));
+    });
+  });
+})();
+
 // ---------- Preloader ----------
 window.addEventListener('load', () => {
   const num = document.getElementById('preNum');
@@ -77,10 +254,92 @@ function pixelOffsetToUnit(offsetPx, squarePx) {
   return offsetPx / halfSquare / 2 * 3;
 }
 
+// ---------- Model loading (GLB / GLTF / OBJ+MTL / STL) ----------
+// Format guide:
+//   .glb   BEST. One binary file with geometry + materials + textures inside.
+//          Small, loads in a single request, no companion files to get lost.
+//   .gltf  Same thing but as JSON + separate files (keep them in the same folder).
+//   .obj   Works, but textures live in a separate .mtl + image files, and big
+//          robots become huge text files. Put a same-named .mtl next to it.
+//   .stl   Geometry only (no colour/texture). Rendered in a neutral aluminium.
+// A canvas opts in with:  data-model="models/robot.glb"
+// Canvases with no data-model keep showing the placeholder cube.
+const modelCache = new Map();   // url -> Promise<THREE.Object3D>, so one file is fetched once
+
+function loadModel(url) {
+  if (modelCache.has(url)) return modelCache.get(url);
+  const ext = url.split('?')[0].split('.').pop().toLowerCase();
+  const promise = new Promise((resolve, reject) => {
+    const need = (name) => {
+      if (THREE[name]) return true;
+      reject(new Error(`${name} script is missing - see the <script> tags in index.html`));
+      return false;
+    };
+    if (ext === 'glb' || ext === 'gltf') {
+      if (!need('GLTFLoader')) return;
+      new THREE.GLTFLoader().load(url, (g) => resolve(g.scene), undefined, reject);
+    } else if (ext === 'obj') {
+      if (!need('OBJLoader')) return;
+      const mtlUrl = url.replace(/\.obj(\?.*)?$/i, '.mtl');
+      const parseObj = (materials) => {
+        const loader = new THREE.OBJLoader();
+        if (materials) loader.setMaterials(materials);
+        loader.load(url, resolve, undefined, reject);
+      };
+      if (THREE.MTLLoader) {
+        // Try to use the .mtl for textures; fall back to plain OBJ if it's absent
+        const base = mtlUrl.substring(0, mtlUrl.lastIndexOf('/') + 1);
+        const mtl = new THREE.MTLLoader();
+        mtl.setResourcePath(base);
+        mtl.load(mtlUrl, (m) => { m.preload(); parseObj(m); }, undefined, () => parseObj(null));
+      } else {
+        parseObj(null);
+      }
+    } else if (ext === 'stl') {
+      if (!need('STLLoader')) return;
+      new THREE.STLLoader().load(url, (geo) => {
+        geo.computeVertexNormals();
+        const mat = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, metalness: 0.6, roughness: 0.35 });
+        resolve(new THREE.Mesh(geo, mat));
+      }, undefined, reject);
+    } else {
+      reject(new Error('Unsupported model format: .' + ext));
+    }
+  });
+  modelCache.set(url, promise);
+  promise.catch(() => modelCache.delete(url));   // allow retry after a failure
+  return promise;
+}
+
+// Free GPU memory held by a model instance (geometry, materials, textures)
+function disposeObject(obj) {
+  obj.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    const mats = Array.isArray(o.material) ? o.material : (o.material ? [o.material] : []);
+    mats.forEach((m) => {
+      Object.keys(m).forEach((k) => { if (m[k] && m[k].isTexture) m[k].dispose(); });
+      m.dispose();
+    });
+  });
+}
+
+// Centre a model on the origin and scale it so its largest side == targetSize
+function fitToFrame(obj, targetSize) {
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  const s = targetSize / maxDim;
+  obj.scale.setScalar(s);
+  obj.position.copy(center.multiplyScalar(-s));   // centred after scaling
+}
+
 function initRoboCube(canvas, opts = {}) {
   const parent = canvas.parentElement;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Colours from textures should be interpreted as sRGB so they don't look washed out
+  if ('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
@@ -98,7 +357,7 @@ function initRoboCube(canvas, opts = {}) {
   scene.add(rim);
   scene.add(new THREE.AmbientLight(0x404040, 0.6));
 
-  // The cube itself — standing in for an imported STL mesh.
+  // The cube itself — the placeholder shown until (or instead of) a real model.
   // Rubik's cube face order for BoxGeometry: +X, -X, +Y, -Y, +Z, -Z
   const size = opts.size || 1.6;
   const geometry = new THREE.BoxGeometry(size, size, size);
@@ -117,11 +376,16 @@ function initRoboCube(canvas, opts = {}) {
   const edgeLines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x0a0b0d, linewidth: 1 }));
   cube.add(edgeLines);
 
+  // The thing that gets rotated: starts as the cube, swapped for the model on load
+  let spinner = cube;
+  let loadedModel = null;
+
   let targetYaw = 0, targetPitch = 0;
   let currentYaw = 0, currentPitch = 0;
 
   function resize() {
     const w = parent.clientWidth, h = parent.clientHeight;
+    if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -135,24 +399,90 @@ function initRoboCube(canvas, opts = {}) {
     targetPitch = yToPitchRadians(ny);
   }
 
+  // --- Only render while on screen: saves GPU and battery on a page with many canvases
+  let visible = true;
+  let rafId = null;
+  let destroyed = false;
+
   function animate() {
-    requestAnimationFrame(animate);
+    rafId = null;
+    if (destroyed || !visible) return;
+    rafId = requestAnimationFrame(animate);
     // ease toward target so movement feels alive, not snapped
     currentYaw += (targetYaw - currentYaw) * 0.12;
     currentPitch += (targetPitch - currentPitch) * 0.12;
-    cube.rotation.y = currentYaw;
-    cube.rotation.x = currentPitch;
+    spinner.rotation.y = currentYaw;
+    spinner.rotation.x = currentPitch;
     renderer.render(scene, camera);
   }
-  animate();
+  function startLoop() { if (!rafId && !destroyed) rafId = requestAnimationFrame(animate); }
 
-  return { setFromNormalized, resize };
+  let io = null;
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver((entries) => {
+      visible = entries[0].isIntersecting;
+      if (visible) startLoop();
+    }, { rootMargin: '150px' });
+    io.observe(canvas);
+  }
+  startLoop();
+
+  // --- Swap in a real model. Loaded lazily: only once the card is near the viewport.
+  function attachModel(url) {
+    const begin = () => {
+      loadModel(url).then((source) => {
+        if (destroyed) return;
+        // Clone so the same cached file can appear in several cards (hero + modal)
+        const model = source.clone(true);
+        // Clone shares materials/geometry; that's fine and keeps memory low. We only
+        // dispose the per-instance wrapper, never the shared cache entry.
+        fitToFrame(model, size * 1.9);
+        const holder = new THREE.Group();
+        holder.add(model);
+        scene.remove(cube);
+        scene.add(holder);
+        spinner = holder;
+        loadedModel = holder;
+        parent.classList.add('model-loaded');
+        startLoop();
+      }).catch((err) => {
+        // Never break the page over a bad file: keep the cube and say why in the console
+        console.warn('[robot model] could not load "' + url + '" - showing placeholder cube.', err);
+        parent.classList.add('model-failed');
+      });
+    };
+    // Defer heavy download until the card is actually about to be seen
+    if (io) {
+      const lazy = new IntersectionObserver((entries, obs) => {
+        if (entries.some(e => e.isIntersecting)) { obs.disconnect(); begin(); }
+      }, { rootMargin: '300px' });
+      lazy.observe(canvas);
+    } else {
+      begin();
+    }
+  }
+  if (opts.model) attachModel(opts.model);
+
+  // Release the WebGL context and GPU memory (used when the modal closes)
+  function destroy() {
+    destroyed = true;
+    if (rafId) cancelAnimationFrame(rafId);
+    if (io) io.disconnect();
+    window.removeEventListener('resize', resize);
+    geometry.dispose();
+    materials.forEach(m => m.dispose());
+    edges.dispose();
+    renderer.dispose();
+    if (renderer.forceContextLoss) renderer.forceContextLoss();
+  }
+
+  return { setFromNormalized, resize, destroy };
 }
 
 // Wire the hero card's cube to cursor position across its own frame
 const heroCubeCanvas = document.querySelector('#roboCard [data-robo-cube]');
 if (heroCubeCanvas && window.THREE) {
-  const heroCube = initRoboCube(heroCubeCanvas, { size: 1.7 });
+  const heroCube = initRoboCube(heroCubeCanvas, { size: 1.7, model: heroCubeCanvas.dataset.model });
   const card = document.getElementById('roboCard');
   const glare = document.getElementById('roboGlare');
   const stage = card.parentElement.parentElement;
@@ -184,7 +514,7 @@ if (heroCubeCanvas && window.THREE) {
 if (window.THREE) {
   document.querySelectorAll('.season-cube-frame [data-robo-cube]').forEach((canvas) => {
     const frame = canvas.parentElement;
-    const cubeCtl = initRoboCube(canvas, { size: 1.3 });
+    const cubeCtl = initRoboCube(canvas, { size: 1.3, model: canvas.dataset.model });
 
     frame.addEventListener('mousemove', (e) => {
       const rect = frame.getBoundingClientRect();
@@ -239,6 +569,11 @@ const roboModal = document.getElementById('roboModal');
 const roboModalCard = document.getElementById('roboModalCard');
 const roboModalTrack = document.getElementById('roboModalTrack');
 let lastFocusedEl = null;
+let modalCubeCtl = null;          // the modal's own 3D viewer, destroyed on close/reopen
+
+function destroyModalCube() {
+  if (modalCubeCtl) { modalCubeCtl.destroy(); modalCubeCtl = null; }
+}
 
 function buildTile(item) {
   const tile = document.createElement('div');
@@ -356,13 +691,15 @@ function populateCard(seasonCard) {
   info.appendChild(p);
   card.appendChild(info);
 
+  destroyModalCube();
   roboModalCard.innerHTML = '';
   roboModalCard.appendChild(card);
 
   // Re-initialize any 3D cube canvas that got cloned into the modal
   const clonedCanvas = mediaWrap.querySelector('[data-robo-cube]');
   if (clonedCanvas && window.THREE) {
-    const cubeCtl = initRoboCube(clonedCanvas, { size: 1.6 });
+    const cubeCtl = initRoboCube(clonedCanvas, { size: 1.6, model: clonedCanvas.dataset.model });
+    modalCubeCtl = cubeCtl;
     mediaWrap.addEventListener('mousemove', (e) => {
       const rect = mediaWrap.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -387,6 +724,7 @@ function openRoboModal(seasonCard) {
 }
 
 function closeRoboModal() {
+  destroyModalCube();
   roboModal.classList.remove('open');
   roboModal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
