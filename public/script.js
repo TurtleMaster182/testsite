@@ -837,10 +837,10 @@ const currentTheme = savedTheme || (prefersDark ? 'dark-mode' : 'light-mode');
 // Apply saved or default theme
 if (currentTheme === 'light-mode') {
   htmlElement.classList.add('light-mode');
-  themeToggle.textContent = '☀️';
+  themeToggle.textContent = '🌑';
 } else {
   htmlElement.classList.remove('light-mode');
-  themeToggle.textContent = '🌑';
+  themeToggle.textContent = '☀️';
 }
 
 // Toggle theme on click
@@ -849,5 +849,5 @@ themeToggle.addEventListener('click', (e) => {
   htmlElement.classList.toggle('light-mode');
   const isLightMode = htmlElement.classList.contains('light-mode');
   localStorage.setItem('theme', isLightMode ? 'light-mode' : 'dark-mode');
-  themeToggle.textContent = isLightMode ? '☀️' : '🌑';
+  themeToggle.textContent = isLightMode ? '🌑' : '☀️';
 });
