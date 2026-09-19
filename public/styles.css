@@ -4,8 +4,8 @@
       --graphite: #2A2D29;
       --off: #F5F3EE;
       --off-dim: #B9B7B0;
-      --red: #E8482C;
-      --red-dim: #8f2c1b;
+      --red: #ff0000;
+      --red-dim: #b10000;
       --sage: #8C9A8C;
       --line: rgba(245, 243, 238, 0.12);
       --ease: cubic-bezier(.22, 1, .36, 1);
@@ -17,8 +17,8 @@
       --graphite: #E8E6E0;
       --off: #0A0B0D;
       --off-dim: #666666;
-      --red: #E8482C;
-      --red-dim: #ff6b4a;
+      --red: #ff0000;
+      --red-dim: #ff0000;
       --sage: #5a7a5a;
       --line: rgba(10, 11, 13, 0.12);
     }
