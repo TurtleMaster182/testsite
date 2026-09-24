@@ -4,6 +4,10 @@ The source for the Peppers Robotics team website. This is a mostly static, singl
 
 > **Start here:** Site content is written directly in HTML and JavaScript. There is no admin dashboard or content database. Commit changes to the repository, review the preview, and merge when ready.
 
+> ### THE PUG STAYS. 🐶
+>
+> Seasons will end. Robot names will change. Entire galleries may be rebuilt. **The Coming Soon Pug card remains.** It is the site's *pièce de résistance*. Never delete it, replace its image, rename its `coming-soon` ID, hide it, or remove its popup media entry as part of a routine content update. When a new season needs a card, **add another card**. The Pug keeps its place in the archive.
+
 ## What visitors see
 
 | Section | What it contains | Main edit point |
@@ -83,7 +87,7 @@ For a 3D card, put a `.glb` under `public/models/` and replace the photo with:
 
 Use the same `data-model` on the hero canvas in `#roboCard` **only if** the hero should show the new robot too. The hero card has its own name, label, stats, and description, which need separate edits. A canvas without `data-model` displays the colored placeholder cube. If a model fails to load, the page keeps the cube and logs a warning in the browser console. The site loads models as they approach the viewport and reuses downloads of the same file.
 
-**Existing IDs:** `kickathon`, `2025-26`, `2024-25`, `2023-24`, `2022-23`, and `coming-soon`. Keep each ID unique. If a season changes, update its card, its `SEASON_MEDIA` list, any matching hero text/model, and the chat facts in `api/chat.js` together. Verify awards and robot specifications before publishing them.
+**Existing IDs:** `kickathon`, `2025-26`, `2024-25`, `2023-24`, `2022-23`, and `coming-soon`. Keep each ID unique. If a season changes, update its card, its `SEASON_MEDIA` list, any matching hero text/model, and the chat facts in `api/chat.js` together. Verify awards and robot specifications before publishing them. **Exception: `coming-soon` is the Pug card. Preserve the card in `public/index.html`, its Pug image, and its `SEASON_MEDIA['coming-soon']` entry in `public/script.js`.**
 
 ## Update upcoming events
 
@@ -144,6 +148,8 @@ The existing `g1`–`g5` classes set the desktop grid shapes in `public/styles.c
 
 Edit `SEASON_MEDIA` in `public/script.js`, as described under [Update a robot card](#update-a-robot-card). Its images are independent of `.gallery-grid`. Long lists scroll inside the popup; the script duplicates tiles for a continuous loop when content overflows. Video items use `type: 'video'`, may include `poster`, and show native controls.
 
+The Pug's popup media uses `https://picsum.photos/id/1025/700/440`. This particular remote image is intentional. The instruction to replace placeholder photos elsewhere on the site **does not apply to the Pug**.
+
 ### Intro, hero, team photo, and favicon
 
 | Asset | Where to update the reference |
@@ -198,7 +204,7 @@ Recommended edit flow:
 The checked-in page still has unfinished sample content. Review at least these items before treating it as public team information:
 
 - Mission lorem ipsum, team stats (`X`/`x`), robot names represented by underscores, and unverified robot descriptions/award labels.
-- Placeholder sponsor names; `picsum.photos` images in Team, the coming-soon card, and the homepage gallery.
+- Placeholder sponsor names; `picsum.photos` images in Team and the homepage gallery. **Keep the Coming Soon Pug card and its image.**
 - Sample event dates/venues and `href="#"` event actions; footer social links also use `#`.
 - Contact `.example` email and a separate footer `mailto:mail.example` target.
 - Prototype message in the footer and mobile menu alert.
