@@ -6,6 +6,7 @@
 
   const state = {
     open: false,
+    pending: false,
     messages: [], // { role: 'user' | 'assistant', content: string }
   };
 
@@ -35,6 +36,9 @@
   const inputEl = panel.querySelector("#ftc-chat-input");
   const sendBtn = panel.querySelector("#ftc-chat-send");
   const closeBtn = panel.querySelector("#ftc-chat-close");
+
+  inputEl.maxLength = 2000;
+  inputEl.setAttribute("aria-label", "Chat message");
 
   // Greeting
   addMessage("bot", "Hi! Ask me anything about our team — meetings, joining, sponsors, etc.");
@@ -67,22 +71,33 @@
   }
 
   async function sendMessage() {
+    if (state.pending) return;
     const text = inputEl.value.trim();
-    if (!text) return;
+    if (!text || text.length > 2000) return;
+    state.pending = true;
 
     inputEl.value = "";
     sendBtn.disabled = true;
+    inputEl.disabled = true;
 
     // Add user message to UI and history
     addMessage("user", text);
     state.messages.push({ role: "user", content: text });
+    // Bound transmitted history as well as server-side context.
+    state.messages = state.messages.slice(-10);
+    while (state.messages.reduce((sum, msg) => sum + msg.content.length, 0) > 8000) state.messages.shift();
+    while (messagesEl.children.length > 60) messagesEl.firstElementChild.remove();
 
     // Create empty bot message container with typing state
     const botMsgEl = addMessage("bot", "");
     botMsgEl.classList.add("typing");
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+    let reader;
     try {
       const res = await fetch(API_URL, {
+        signal: controller.signal,
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: state.messages }),
@@ -105,7 +120,7 @@
 
       botMsgEl.classList.remove("typing");
 
-      const reader = res.body.getReader();
+      reader = res.body.getReader();
       const decoder = new TextDecoder();
       let fullReply = "";
       let buffer = "";
@@ -131,23 +146,22 @@
           const rawData = line.slice(6).trim();
           if (rawData === "[DONE]") continue;
 
-          try {
-            const parsed = JSON.parse(rawData);
-            const textChunk = parsed.text || "";
-            if (textChunk) {
-              fullReply += textChunk;
-              botMsgEl.textContent = fullReply;
-              messagesEl.scrollTop = messagesEl.scrollHeight;
-            }
-          } catch (e) {
-            // Ignore malformed event
+          let parsed;
+          try { parsed = JSON.parse(rawData); } catch { continue; }
+          if (parsed.error) throw new Error('The response was interrupted. Please try again.');
+          const textChunk = typeof parsed.text === 'string' ? parsed.text : '';
+          if (fullReply.length + textChunk.length > 16000) throw new Error('Response exceeded the size limit.');
+          if (textChunk) {
+            fullReply += textChunk;
+            botMsgEl.textContent = fullReply;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
           }
         }
       }
 
       // Commit finalized message to chat history state
       if (fullReply) {
-        state.messages.push({ role: "assistant", content: fullReply });
+        state.messages.push({ role: "assistant", content: fullReply.slice(0, 2000) });
       } else {
         botMsgEl.textContent = "Sorry, no response generated.";
       }
@@ -158,8 +172,13 @@
       botMsgEl.textContent = err && err.message
         ? err.message
         : "Sorry, something went wrong. Please try again later.";
-      console.error(err);
+
     } finally {
+      clearTimeout(timeout);
+      controller.abort();
+      if (reader) { void reader.cancel().catch(() => {}); }
+      state.pending = false;
+      inputEl.disabled = false;
       sendBtn.disabled = false;
     }
   }
