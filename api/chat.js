@@ -27,30 +27,32 @@ const TEAM_INFO = {
     slogan: 'More than robots, we\'re building tomorrow.',
     meetingDaysTimes: 'Tuesdays, 8 PM',
     meetingLocation: 'At school, and online',
-    contactEmail: '[FILL IN]', // placeholder given ("mailul.lui@alex.trust") isn't a usable real address
+    contactEmail: 'contact@peppers-robotics.ro', // placeholder given ("mailul.lui@alex.trust") isn't a usable real address
     howToJoin: 'Fill out the team\'s Google Form (linked on the team website / social media when recruitment is open)',
-    currentSeasonGame: '[FILL IN]', // "BIOBUZ SEASON 11" doesn't match a real FTC season name; per team history the most recent listed season is DECODE (2025-26)
+    currentSeasonGame: 'BIOBUZZ (FTC 2026–27)'
     socials: 'TikTok, Instagram, Facebook',
-    fundraisingInfo: '[FILL IN]', // "ask cristi" isn't something a visitor can act on directly — fill in an actual process/contact
+    fundraisingInfo: 'For sponsorship or funding packages, contact the team at contact@peppers-robotics.ro. The public Support Us page describes supporter benefits and funding packages.'
   },
 
   // One entry per notable achievement/award. Add or remove freely.
   achievements: [
-    { season: '2022', title: 'Motivate Award, 2nd Place — FIRST Championship, Houston (Franklin Division)' },
-    { season: '2022', title: 'Inspire Award, 2nd Place — Romanian National Championship' },
-    { season: '2022', title: 'Finalist Alliance, 1st Team Selected — Romanian National Championship' },
-    { season: '2022', title: 'Winning Alliance, 1st Team Selected — Bucharest Qualifying Tournament' },
-    { season: '2022', title: 'Innovate Award (sponsored by Raytheon Technologies), 2nd Place — Bucharest Qualifying Tournament' },
-    { season: '2023', title: 'Semifinalist, Franklin Division — FIRST Championship, Houston' },
-    { season: '2024', title: 'Winning Alliance, 1st Team Selected — East Romania League Tournament' },
-    { season: '2024', title: 'Connect Award, 3rd Place — East Romania League Tournament' },
-    { season: '2025-26', title: 'Sustain Award — Romania East League Tournament' },
-    { season: '2025-26', title: 'Sustain Award — Istanbul Premier Event, Rumeli Division' },
+    { season: '2022–23', title: 'Motivate Award, 2nd Place — FIRST Championship, Houston (Franklin Division)' },
+    { season: '2022–23', title: 'Inspire Award, 2nd Place — Romanian National Championship' },
+    { season: '2022–23', title: 'Finalist Alliance, 1st Team Selected — Romanian National Championship' },
+    { season: '2022–23', title: 'Winning Alliance, 1st Team Selected — Bucharest Qualifying Tournament' },
+    { season: '2022–23', title: 'Innovate Award sponsored by Raytheon Technologies, 2nd Place — Bucharest Qualifying Tournament' },
+    { season: '2023–24', title: 'Motivate Award — RO #4 Iași' },
+    { season: '2023–24', title: 'Design Award, 2nd Place — Romanian National Championship' },
+    { season: '2024–25', title: 'Winning Alliance, 1st Team Selected — East Romania League Tournament' },
+    { season: '2024–25', title: 'Connect Award, 3rd Place — East Romania League Tournament' },
+    { season: '2025–26', title: 'Sustain Award — Romania East League Tournament' },
+    { season: '2025–26', title: 'Sustain Award — İstanbul Premier Event, Rumeli Division' },
+    { season: '2026–27 off-season', title: 'Innovate Award — Kickathon' },
   ],
 
   // One entry per sponsor. Add or remove freely.
   sponsors: [
-    // { name: 'Local Foundry Co', note: 'Provides machining time' },
+    { name: 'Liceul Teoretic de Informatică „Grigore Moisil” Iași', note: 'Listed as a sponsor on FIRST’s 2026 team profile' },
   ],
 
   // One entry per team member you want the bot to be able to talk about.
@@ -63,12 +65,13 @@ const TEAM_INFO = {
   // One entry per season, oldest or newest first — your call, order here
   // doesn't matter to the model.
   seasons: [
-    { years: '2020', tag: 'Rookie season', summary: 'Competed in ULTIMATE GOAL.' },
-    { years: '2021', tag: '', summary: 'Competed in FREIGHT FRENZY.' },
-    { years: '2022', tag: 'Standout season', summary: 'Competed in POWERPLAY — Motivate Award 2nd Place at FIRST Championship (Franklin Division), Inspire Award 2nd Place and Finalist Alliance at Romanian National Championship, Winning Alliance and Innovate Award 2nd Place at Bucharest Qualifying Tournament.' },
-    { years: '2023', tag: '', summary: 'Competed in CENTERSTAGE — reached the semifinals of the Franklin Division at the FIRST Championship in Houston.' },
-    { years: '2024', tag: '', summary: 'Competed in INTO THE DEEP — Winning Alliance (1st team selected) and Connect Award 3rd Place at the East Romania League Tournament.' },
-    { years: '2025-26', tag: 'Current season', summary: 'Competing in DECODE — Sustain Award at the Romania East League Tournament and at the Istanbul Premier Event (Rumeli Division). Finished 16th of 31 in qualifications at the Romania East League Tournament and 16th of 48 in the VLAICU Division at the 2026 Romania Championship.' },
+    { years: '2020–21', tag: 'Rookie season', summary: 'Competed in ULTIMATE GOAL. FIRST lists 2020 as the team’s rookie year.' },
+    { years: '2021–22', tag: '', summary: 'Competed in FREIGHT FRENZY.' },
+    { years: '2022–23', tag: 'Standout season', summary: 'Competed in POWERPLAY — Motivate Award, 2nd Place at FIRST Championship (Franklin Division); Inspire Award, 2nd Place and Finalist Alliance at Romanian National Championship; Winning Alliance and Innovate Award, 2nd Place at Bucharest Qualifying Tournament.' },
+    { years: '2023–24', tag: '', summary: 'Competed in CENTERSTAGE — Motivate Award at RO #4 Iași and Design Award, 2nd Place, at the Romanian National Championship.' },
+    { years: '2024–25', tag: '', summary: 'Competed in INTO THE DEEP — Winning Alliance, 1st Team Selected, and Connect Award, 3rd Place, at the East Romania League Tournament.' },
+    { years: '2025–26', tag: '', summary: 'Competed in DECODE — Sustain Awards at the Romania East League Tournament and İstanbul Premier Event (Rumeli Division). The team’s public site names its DECODE robot Jack.' },
+    { years: '2026–27', tag: 'Current season', summary: 'Competing in BIOBUZZ. Peppers’ official FIRST team page had no BIOBUZZ match results or awards listed as of October 6, 2026. At the off-season Kickathon, the team received the Innovate Award.' },
   ],
 
   // Freeform Q&A pairs. The most specific and complete these are, the
@@ -76,7 +79,8 @@ const TEAM_INFO = {
   faq: [
     { q: 'When and where do you meet?', a: 'Tuesdays at 8 PM, at school and online.' },
     { q: 'How can I join the team?', a: 'Fill out the team\'s Google Form (shared on the website and social media when recruitment is open).' },
-    { q: 'How can we sponsor or donate?', a: '[FILL IN]' },
+    { q: 'How can we sponsor or donate?', a: 'For sponsorship or funding packages, contact the team at contact@peppers-robotics.ro. The public Support Us page describes supporter benefits and funding packages.' },
+    { q: 'What game is Peppers playing this season?', a: 'BIOBUZZ, the 2026–27 FIRST Tech Challenge game.' },
     { q: 'What is Peppers\' FTC team number?', a: '19044.' },
     { q: 'Where is the team based?', a: 'Iași, Romania, at Liceul Teoretic de Informatică „Grigore Moisil" (Theoretical High School of Computer Science "Grigore Moisil").' },
     { q: 'What is Peppers\' rookie year?', a: '2020, per FIRST\'s official team record. The team\'s own materials describe having existed for about 7 years with 120+ student contributors, so treat both figures as context rather than a single exact founding date.' },
