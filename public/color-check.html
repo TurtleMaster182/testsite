@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Isolated color check</title>
+  <style>
+    body { margin: 32px; background: white; color: black; font: 18px/1.5 system-ui, sans-serif; }
+    main { max-width: 960px; margin: auto; }
+    .samples { display: flex; flex-wrap: wrap; gap: 24px; }
+    figure { margin: 0; flex: 1 1 240px; }
+    .swatch { height: 260px; }
+    figcaption { padding-top: 12px; }
+    code { font-size: 16px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Isolated color check</h1>
+    <p>This page loads no website styles, JavaScript, images, gradients, or overlays.</p>
+    <div class="samples">
+      <figure>
+        <div class="swatch" style="background: #ff0000;"></div>
+        <figcaption>Pure red<br><code>#FF0000 · RGB 255, 0, 0</code></figcaption>
+      </figure>
+      <figure>
+        <div class="swatch" style="background: #e34713;"></div>
+        <figcaption>Your first screenshot’s color<br><code>#E34713 · RGB 227, 71, 19</code></figcaption>
+      </figure>
+      <figure>
+        <div class="swatch" style="background: #fb0528;"></div>
+        <figcaption>Generated shirt reference<br><code>#FB0528 · RGB 251, 5, 40</code></figcaption>
+      </figure>
+    </div>
+    <p>Compare the first swatch with the website’s contact section in this same browser.</p>
+    <p>If both look orange, the website’s styles and overlays cannot explain the isolated swatch. If only the website looks orange, we need to inspect that page’s loaded styles and layers.</p>
+    <p><a href="./?color-check=20261006-3#contact">Open website for comparison</a></p>
+  </main>
+</body>
+</html>

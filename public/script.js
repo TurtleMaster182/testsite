@@ -191,17 +191,6 @@ window.addEventListener('load', () => {
   }, 1300);
 });
 
-// ---------- Custom cursor ----------
-const cursorDot = document.getElementById('cursorDot');
-window.addEventListener('mousemove', (e) => {
-  cursorDot.style.left = e.clientX + 'px';
-  cursorDot.style.top = e.clientY + 'px';
-});
-document.querySelectorAll('a, .season-card, .team-item, .gallery-item, .robo-card').forEach(el => {
-  el.addEventListener('mouseenter', () => cursorDot.classList.add('big'));
-  el.addEventListener('mouseleave', () => cursorDot.classList.remove('big'));
-});
-
 // ---------- Intro video: fixed background, fades then pauses as you scroll ----------
 const introVideoFrame = document.getElementById('introVideoFrame');
 const introVideoEl = document.getElementById('introVideoEl');
@@ -352,7 +341,7 @@ function initRoboCube(canvas, opts = {}) {
   const fill = new THREE.DirectionalLight(0x8c9a8c, 0.5);
   fill.position.set(-4, -2, 2);
   scene.add(fill);
-  const rim = new THREE.DirectionalLight(0xe8482c, 0.8);
+  const rim = new THREE.DirectionalLight(0xff0000, 0.8);
   rim.position.set(-2, 3, -4);
   scene.add(rim);
   scene.add(new THREE.AmbientLight(0x404040, 0.6));

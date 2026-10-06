@@ -84,34 +84,6 @@
       max-width: 100%;
     }
 
-    /* ---------- CUSTOM CURSOR ---------- */
-    .cursor-dot {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--red);
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      transition: width .25s var(--ease), height .25s var(--ease), background .25s var(--ease);
-      mix-blend-mode: difference;
-    }
-
-    .cursor-dot.big {
-      width: 56px;
-      height: 56px;
-      background: var(--off);
-    }
-
-    @media (hover:none) {
-      .cursor-dot {
-        display: none;
-      }
-    }
-
     /* ---------- PRELOADER ---------- */
     #preloader {
       position: fixed;
@@ -329,7 +301,7 @@
       justify-content: center;
       padding: 120px 40px 60px;
       background:
-        radial-gradient(ellipse 80% 60% at 70% 20%, rgba(232, 72, 44, 0.14), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 70% 20%, var(--red), transparent 60%),
         var(--black);
       overflow: hidden;
     }
@@ -489,7 +461,7 @@
     }
 
     .robo-card:hover {
-      box-shadow: 0 40px 80px -20px rgba(232, 72, 44, 0.35);
+      box-shadow: 0 40px 80px -20px rgb(255, 0, 0);
     }
 
     .robo-media {
@@ -1104,11 +1076,6 @@
     .robo-tile:hover {
       z-index: 999;
       /* Higher z-index to overlay adjacent tiles */
-    }
-
-    .robo-tile:hover img,
-    .robo-tile:hover video {
-      /* buna alex */
     }
 
     .robo-tile.is-active {
