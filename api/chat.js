@@ -29,7 +29,7 @@ const TEAM_INFO = {
     meetingLocation: 'At school, and online',
     contactEmail: 'contact@peppers-robotics.ro', // placeholder given ("mailul.lui@alex.trust") isn't a usable real address
     howToJoin: 'Fill out the team\'s Google Form (linked on the team website / social media when recruitment is open)',
-    currentSeasonGame: 'BIOBUZZ (FTC 2026–27)'
+    currentSeasonGame: 'BIOBUZZ (FTC 2026–27)',
     socials: 'TikTok, Instagram, Facebook',
     fundraisingInfo: 'For sponsorship or funding packages, contact the team at contact@peppers-robotics.ro. The public Support Us page describes supporter benefits and funding packages.'
   },
